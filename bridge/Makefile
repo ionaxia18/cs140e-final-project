@@ -2,18 +2,16 @@ CC = gcc
 
 CFLAGS = -Wall -I../src -I.
 
-TEST_DIR = tests
+BRIDGE_MC_SRC = bridge-minecraft.c
+BRIDGE_PI_SRC = bridge-pi.c
 
-BRIDGE_SRC = bridge-minecraft.c
-TEST_SRC = $(TEST_DIR)/test_bridge_minecraft.c
+all: bridge-minecraft bridge-pi
 
-TEST_EXE := $(notdir $(TEST_SRC))
-TEST_EXE := $(basename $(TEST_EXE))
+bridge-minecraft: $(BRIDGE_MC_SRC)
+	$(CC) $(CFLAGS) $^ -o bridge-minecraft
 
-all: $(TEST_EXE)
-
-$(TEST_EXE): $(TEST_SRC) $(BRIDGE_SRC)
-	$(CC) $(CFLAGS) $^ -o $@
+bridge-pi: $(BRIDGE_PI_SRC)
+	$(CC) $(CFLAGS) $^ -o bridge-pi
 
 clean:
-	rm -f $(TEST_EXE)
+	rm -f bridge-minecraft bridge-pi

@@ -4,7 +4,13 @@
 #include <unistd.h>
 #include <sys/socket.h>
 #include <arpa/inet.h>
+#include <termios.h>
+#include <fcntl.h>
 
+#define PLUGIN_IP "100.100.1.100"
+#define PLUGIN_PORT 4711
+#define PI_PORT "/dev/cu.SLAB_USBtoUART"
+#define BAUDRATE    B115200
 
 // setup tcp function so that it can be used to talk to fruitjuice plugin
 int connect_to_fruitjuice(const char * ip, int port) {
@@ -22,12 +28,6 @@ int connect_to_fruitjuice(const char * ip, int port) {
     return sock;
 }
 
-void remove_block(int sock, int x, int y, int z) {
-    char buf[128];
-    sprintf(buf, "world.setBlock(%d, %d, %d, air)\n", x, y, z);
-    send(sock, buf, strlen(buf), 0);
-}
-
 void put_block(int sock, int x, int y, int z, const char * block) {
     char buf[128];
     sprintf(buf, "world.setBlock(%d, %d, %d, %s)\n", x, y, z, block);
@@ -38,4 +38,70 @@ void move_player(int sock, int x, int y, int z) {
     char buf[128];
     sprintf(buf, "player.setTile(%d, %d, %d)\n", x, y, z);
     send(sock, buf, strlen(buf), 0);
+}
+
+int setup_pi_connection(const char * device) {
+    int fd = open(device, O_RDWR | O_NOCTTY);
+    if (fd < 0) {
+        return -1;
+    }
+
+    struct termios tty;
+    tcgetattr(fd, &tty);
+
+    cfsetspeed(&tty, BAUDRATE);
+    cfmakeraw(&tty);
+    tty.c_cflag |= (CLOCAL | CREAD);
+    tcsetattr(fd, TCSANOW, &tty);
+
+    return fd;
+}
+
+int main() {
+    int sock = connect_to_fruitjuice(PLUGIN_IP, PLUGIN_PORT);
+    if (sock < 0) {
+        return 1;
+    }
+
+    int pi_fd = setup_pi_connection(PI_PORT);
+    if (pi_fd < 0) {
+        return 1;
+    }
+    
+    char buffer[256];
+    int buf_idx = 0;
+    char c;
+    
+    printf("connecting to pi \n");
+
+    while (1) {
+        int n = read(pi_fd, &c, 1);
+        if (n <= 0) {
+            continue;
+        }
+
+        if (c == '\n') {
+            buffer[buf_idx] = '\0';
+            buf_idx = 0;
+
+            char cmd[16];
+            int x, y, z;
+            char block[64];
+        
+            if (sscanf(buffer, "%15s %d %d %d %63s", cmd, &x, &y, &z, block) == 5) {
+                if (strcmp(cmd, "BLOCK") == 0) {
+                    put_block(sock, x, y, z, block);
+                    printf("put block %d %d %d %s\n", x, y, z, block);
+                }
+            }
+            else if (sscanf(buffer, "%15s %d %d %d", cmd, &x, &y, &z) == 4) {
+                if (strcmp(cmd, "PLAYER") == 0) {
+                    move_player(sock, x, y, z);
+                    printf("move player %d %d %d\n", x, y, z);
+                }
+            }
+        }
+    }
+    close(sock);
+    return 0;
 }

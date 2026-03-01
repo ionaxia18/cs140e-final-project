@@ -2,7 +2,7 @@
 #define BRIDGE_MINECRAFT_H
 
 int connect_to_fruitjuice(const char * ip, int port);
-void remove_block(int sock, int x, int y, int z);
+int setup_pi_connection(const char * device);
 void put_block(int sock, int x, int y, int z, const char * block);
 void move_player(int sock, int x, int y, int z);
 
