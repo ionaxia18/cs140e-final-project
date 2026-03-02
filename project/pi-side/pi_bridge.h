@@ -8,6 +8,9 @@ typedef struct coords {
     int z;                    
 } coords; // x y z coordinates
 
-coords do_move(char c);
+void uart_put_int(int val);
+void do_move(char c);
+void change_block(char c);
+
 
 #endif
