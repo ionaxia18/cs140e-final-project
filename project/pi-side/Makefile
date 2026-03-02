@@ -1,16 +1,14 @@
-# PROG_SRC := test-key-fns.c
-# PROGS := $(PROG_SRC:.c=.bin)
+PROG_SRC := pi_bridge.c
+PROG_BIN := $(PROG_SRC:.c=.bin)
 
-LIBPI     := ../../../libpi
-PI_BRIDGE_SRC := ../pi_bridge.c
+MEMMAP    := ../../libpi/memmap
+START     := ../../libpi/objs/staff-start.o
+KMALLOC   := ../../libpi/staff-objs/staff-kmalloc.o
+LPI       := ../../libpi/libpi.a
+UART	  := ../../libpi/objs/uart.o
 
-MEMMAP := $(LIBPI)/memmap
-START  := $(LIBPI)/staff-start.o
-KMALLOC := $(LIBPI)/staff-objs/staff-kmalloc.o
-LPI    := $(LIBPI)/libpi.a
-
-ARM  := arm-none-eabi
-CC   := $(ARM)-gcc
+ARM := arm-none-eabi
+CC  := $(ARM)-gcc
 
 CFLAGS := -O -Wall -Wno-unused-variable -Werror -std=gnu99
 CFLAGS += -nostdlib -nostartfiles -ffreestanding
@@ -18,18 +16,17 @@ CFLAGS += -mcpu=arm1176jzf-s
 CFLAGS += -mno-unaligned-access
 CFLAGS += -I$(LIBPI)/include -I$(LIBPI)/libc -I..
 
-all: $(PROGS) run
+all: $(PROG_BIN)
 
-%.bin: %.c $(PI_BRIDGE_SRC) $(START) $(LPI) $(MEMMAP) Makefile
-	$(CC) $(CFLAGS) $(START) $< $(WORLD_SRC) $(KMALLOC) -T $(MEMMAP) $(LPI) -o $*.elf
+$(PROG_BIN): $(PROG_SRC) $(START) $(LPI) $(UART) $(MEMMAP)
+	$(CC) $(CFLAGS) $(START) $(PROG_SRC) $(KMALLOC) -T $(MEMMAP) $(LPI) -o $*.elf
 	$(ARM)-objcopy $*.elf -O binary $@
 	$(ARM)-objdump -D $*.elf > $*.list
 
-run: $(PROGS)
-	pi-install 
-	
+run: $(PROG_BIN)
+	pi-install $(PROG_BIN)
+
 clean:
-	rm -f *.bin *.list *.elf *.o *~
+	rm -f *.bin *.elf *.o *.list *~
 
 .PHONY: all clean run
-
