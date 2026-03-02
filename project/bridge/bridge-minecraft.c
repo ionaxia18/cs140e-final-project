@@ -31,7 +31,7 @@ int connect_to_fruitjuice(const char * ip, int port) {
 
 void put_block(int sock, int x, int y, int z, const char * block) {
     char buf[128];
-    sprintf(buf, "world.setBlock(%d, %d, %d, %s)\n", x, y, z, block);
+    sprintf(buf, "world.setBlock(%d, %d, %d,%s)\n", x, y, z, block);
     send(sock, buf, strlen(buf), 0);
 }
 
@@ -59,11 +59,11 @@ int setup_pi_connection(const char * device) {
 }
 
 int fruit_juice_test(int sock) {
-    move_player(sock, 0, 0, 0);
-    move_player(sock, 1, 0, 0);
-    put_block(sock, 1, 0, 0, "ACACIA_BUTTON");
+    // move_player(sock, 235, 65, -1);
+    put_block(sock, 235, 65, -1, "DIAMOND_BLOCK");
     return 1;
 }
+
 int main() {
     int sock = connect_to_fruitjuice(PLUGIN_IP, PLUGIN_PORT);
     if (sock < 0) {
