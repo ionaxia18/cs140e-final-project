@@ -45,7 +45,7 @@ typedef struct world world_t;
 
 /* Allocate and init world state hash tables
 Returns null if fail */
-world_t* world_create(const world_config_t* cfg);
+world_t* world_create(const world_config_t* cg);
 
 // Reset world to original state
 void world_reset(world_t* w);
