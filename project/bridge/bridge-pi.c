@@ -54,6 +54,7 @@ int main() {
             write(fd, &c, 1);
         }
         else if (c == 'q') {
+            write(fd, &c, 1);
             printf("quitting the program\n");
             break;
         }
