@@ -29,7 +29,7 @@ typedef struct {
     // Hash table capacities (for kmalloc)
     uint32_t edits_cap;
     uint32_t pending_cap;
-} world_config_t;
+} world_info_t;
 
 typedef struct {
     block_t block;
@@ -42,6 +42,12 @@ typedef struct {
     uint32_t cap;
     uint32_t size;
 } world_table_t;
+
+struct world {
+    const world_info_t* info;
+    world_table_t edits;
+    world_table_t pending;
+};
 
 typedef uint32_t world_key_t;
 
@@ -64,13 +70,19 @@ typedef struct world world_t;
 
 /* Allocate and init world state hash tables
 Returns null if fail */
-world_t* world_create(const world_config_t* cg);
+world_t* world_create(const world_info_t* info);
 
 // Reset world to original state
 void world_reset(world_t* w);
 
 // Get base block info at position p from seed
 block_t world_base_block(const world_t* w, world_pos_t p);
+
+// Run hash function to get index in edits table
+uint32_t block_hash_index(const world_t* w, world_pos_t p);
+
+// Lookup entry in edits table: returns T if found, populates entry
+bool world_get_entry(const world_t* w, world_entry_t* entry, world_pos_t p);
 
 // Get current block info at position p 
 block_t world_get_block(const world_t* w, world_pos_t p);

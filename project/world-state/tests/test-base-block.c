@@ -9,7 +9,7 @@ void get_block_info(world_t* w, world_pos_t p) {
 
 void notmain(void) {
     // create sample config for world
-    world_config_t cg = {
+    world_info_t info = {
         .seed = 0,
         .min = (world_pos_t){-255, -255, -255},
         .max = (world_pos_t){0, 0, 0},
@@ -17,7 +17,7 @@ void notmain(void) {
         .pending_cap = 256,
     };
 
-    world_t* w = world_create(&cg);
+    world_t* w = world_create(&info);
 
 
     if (!w) {

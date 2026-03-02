@@ -1,11 +1,6 @@
 #include "flatworld.h"
 #include "rpi.h"
 
-struct world {
-    world_table_t edits;
-    world_table_t pending;
-};
-
 world_key_t world_make_key(world_pos_t p) {
     uint32_t mask = 0x3ff; 
     // mask to get rid of sign bit
@@ -26,32 +21,29 @@ world_pos_t world_read_key(world_key_t k){
 
     return p;
 }
+
 bool world_pos_is_valid(world_pos_t p) {
     return p.x >= -512 && p.x <= 511 && p.y >= -512 && p.y <= 511 && p.z >= -512 && p.z <= 511;
 }
 
-/* Allocate and init world hash tables
-Returns null if fail */
-world_t* world_create(const world_config_t* cg) {
+world_t* world_create(const world_info_t* info) {
     world_t* w = kmalloc(sizeof(world_t));
     if (!w) {
         return NULL;
     }
-
-    w->edits.entries = kmalloc(cg->edits_cap * sizeof(world_entry_t));
-    w->edits.cap = cg->edits_cap;
+    w->info = info;
+    w->edits.entries = kmalloc(info->edits_cap * sizeof(world_entry_t));
+    w->edits.cap = info->edits_cap;
     w->edits.size = 0;
-    w->pending.entries = kmalloc(cg->pending_cap * sizeof(world_entry_t));
-    w->pending.cap = cg->pending_cap;
+    w->pending.entries = kmalloc(info->pending_cap * sizeof(world_entry_t));
+    w->pending.cap = info->pending_cap;
     w->pending.size = 0;
 
     return w;
 }
 
-// Reset world to original state
 void world_reset(world_t* w);
 
-// Get base block info at position p from superflat seed
 block_t world_base_block(const world_t* w, world_pos_t p) {
     if (!world_pos_is_valid(p)) {
         return BLOCK_AIR;
@@ -68,31 +60,28 @@ block_t world_base_block(const world_t* w, world_pos_t p) {
     }
 }
 
-
-
 // Run hash function to get index of table
-uint32_t world_hash_index(const world_t* w, world_pos_t p) { 
+uint32_t block_hash_index(const world_t* w, world_pos_t p) { 
     uint32_t key = world_make_key(p);
     // Knuth multiplicative hash function
     return (key * 2654435761u) >> (32 - __builtin_ctz(w->edits.cap)); 
 }
 
-
-bool world_pos_equal(world_pos_t p1, world_pos_t p2) {
+// Check if two positions are equal
+bool block_pos_equal(world_pos_t p1, world_pos_t p2) {
     return p1.x == p2.x && p1.y == p2.y && p1.z == p2.z;
 }
 
-/* Assumes pos is valid. Populates entry ptr with info from edits table about block if found in table.
+/* Assumes pos is valid. 
+Populates entry ptr with info from edits table about block if found in table.
 Returns F if not found and T if found*/
-
 bool world_get_entry(const world_t* w, world_entry_t* entry, world_pos_t p) {
-    uint32_t index = world_hash_index(w, p);
+    uint32_t index = block_hash_index(w, p);
     world_entry_t* entries = w->edits.entries;
-    
 
     // Linear probe until find entry with the same pos or first empty slot
     while (!(entries[index].empty) && index < w->edits.cap) {
-        if (world_pos_equal(entries[index].pos, p)) {
+        if (block_pos_equal(entries[index].pos, p)) {
             *entry = entries[index];
             return true;
         }
