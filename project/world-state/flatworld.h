@@ -19,16 +19,6 @@ typedef struct {
     int16_t z;
 } world_pos_t;
 
-typedef uint32_t world_key_t;
-
-/* Create integer key of 10 bit chunks: x bits | y bits | z bits
-Theoretically limits world max size to 1024x1024x1024
-Converts position into key for hash table */
-world_key_t world_make_key(world_pos_t p);
-
-// Convert key back into position 
-world_pos_t world_read_key(world_key_t k);
-
 typedef struct {
     uint32_t seed;
 
@@ -40,6 +30,35 @@ typedef struct {
     uint32_t edits_cap;
     uint32_t pending_cap;
 } world_config_t;
+
+typedef struct {
+    block_t block;
+    world_pos_t pos;
+    bool empty;
+} world_entry_t;
+
+typedef struct {
+    world_entry_t* entries;
+    uint32_t cap;
+    uint32_t size;
+} world_table_t;
+
+typedef uint32_t world_key_t;
+
+
+
+
+/* Create integer key of 10 bit chunks: x bits | y bits | z bits
+Theoretically limits world max size to 1024x1024x1024 ie -512 to 511 for each
+Converts position into key for hash table */
+world_key_t world_make_key(world_pos_t p);
+
+// Convert key back into position 
+world_pos_t world_read_key(world_key_t k);
+
+// Check if pos is within support range
+bool world_pos_is_valid(world_pos_t p);
+
 
 typedef struct world world_t;
 

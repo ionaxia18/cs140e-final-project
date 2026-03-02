@@ -1,11 +1,12 @@
-PROG_SRC := test-key-fns.c
+PROG_SRC := $(wildcard *.c)
 PROGS := $(PROG_SRC:.c=.bin)
 
 LIBPI     := ../../../libpi
-WORLD_SRC := ../world.c
+WORLD_SRC := ../flatworld.c
 
 MEMMAP := $(LIBPI)/memmap
 START  := $(LIBPI)/staff-start.o
+KMALLOC := $(LIBPI)/staff-objs/staff-kmalloc.o
 LPI    := $(LIBPI)/libpi.a
 
 ARM  := arm-none-eabi
@@ -20,12 +21,15 @@ CFLAGS += -I$(LIBPI)/include -I$(LIBPI)/libc -I..
 all: $(PROGS) run
 
 %.bin: %.c $(WORLD_SRC) $(START) $(LPI) $(MEMMAP) Makefile
-	$(CC) $(CFLAGS) $(START) $< $(WORLD_SRC) -T $(MEMMAP) $(LPI) -o $*.elf
+	$(CC) $(CFLAGS) $(START) $< $(WORLD_SRC) $(KMALLOC) -T $(MEMMAP) $(LPI) -o $*.elf
 	$(ARM)-objcopy $*.elf -O binary $@
 	$(ARM)-objdump -D $*.elf > $*.list
 
 run: $(PROGS)
-	pi-install test-key-fns.bin
+	@for bin in $(PROGS); do \
+		echo "--- Running $$bin ---"; \
+		pi-install $$bin; \
+	done
 
 clean:
 	rm -f *.bin *.list *.elf *.o *~
