@@ -26,7 +26,7 @@ typedef struct {
     world_pos_t min;
     world_pos_t max;
 
-    // Hash table capacities (for kmalloc)
+    // Hash table capacities (for kmalloc), must be powers of 2
     uint32_t edits_cap;
     uint32_t pending_cap;
 } world_info_t;
@@ -34,7 +34,7 @@ typedef struct {
 typedef struct {
     block_t block;
     world_pos_t pos;
-    bool empty;
+    bool full;
 } world_entry_t;
 
 typedef struct {
@@ -79,7 +79,7 @@ void world_reset(world_t* w);
 block_t world_base_block(const world_t* w, world_pos_t p);
 
 // Run hash function to get index in edits table
-uint32_t block_hash_index(const world_t* w, world_pos_t p);
+uint32_t block_hash_index(const world_t* w, world_pos_t p, uint32_t cap);
 
 // Lookup entry in edits table: returns T if found, populates entry
 bool world_get_entry(const world_t* w, world_entry_t* entry, world_pos_t p);

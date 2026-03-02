@@ -61,10 +61,10 @@ block_t world_base_block(const world_t* w, world_pos_t p) {
 }
 
 // Run hash function to get index of table
-uint32_t block_hash_index(const world_t* w, world_pos_t p) { 
+uint32_t block_hash_index(const world_t* w, world_pos_t p, uint32_t cap) { 
     uint32_t key = world_make_key(p);
     // Knuth multiplicative hash function
-    return (key * 2654435761u) >> (32 - __builtin_ctz(w->edits.cap)); 
+    return (key * 2654435761u) >> (32 - __builtin_ctz(cap)); 
 }
 
 // Check if two positions are equal
@@ -76,16 +76,21 @@ bool block_pos_equal(world_pos_t p1, world_pos_t p2) {
 Populates entry ptr with info from edits table about block if found in table.
 Returns F if not found and T if found*/
 bool world_get_entry(const world_t* w, world_entry_t* entry, world_pos_t p) {
-    uint32_t index = block_hash_index(w, p);
+    uint32_t start = block_hash_index(w, p, w->edits.cap);
     world_entry_t* entries = w->edits.entries;
 
     // Linear probe until find entry with the same pos or first empty slot
-    while (!(entries[index].empty) && index < w->edits.cap) {
+    for (int i = 0; i < w->edits.cap; i++) {
+        uint32_t index = (start + i) & (w->edits.cap - 1);
+        if (!(entries[index].full)) {
+            return false;
+        }
+
         if (block_pos_equal(entries[index].pos, p)) {
             *entry = entries[index];
             return true;
         }
-        index++;
+       
     }
 
     return false;
