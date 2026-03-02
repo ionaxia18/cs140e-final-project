@@ -31,13 +31,13 @@ int connect_to_fruitjuice(const char * ip, int port) {
 
 void put_block(int sock, int x, int y, int z, const char * block) {
     char buf[128];
-    sprintf(buf, "world.setBlock(%d, %d, %d,%s)\n", x, y, z, block);
+    sprintf(buf, "world.setBlock(%d,%d,%d,%s)\n", x, y, z, block);
     send(sock, buf, strlen(buf), 0);
 }
 
 void move_player(int sock, int x, int y, int z) {
     char buf[128];
-    sprintf(buf, "player.setTile(%d, %d, %d)\n", x, y, z);
+    sprintf(buf, "player.setTile(%d,%d,%d)\n", x, y, z);
     send(sock, buf, strlen(buf), 0);
 }
 
