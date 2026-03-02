@@ -7,7 +7,7 @@
 #include <termios.h>
 #include <fcntl.h>
 
-#define PLUGIN_IP "100.100.1.100"
+#define PLUGIN_IP "127.0.0.1"
 #define PLUGIN_PORT 4711
 #define PI_PORT "/dev/cu.SLAB_USBtoUART"
 #define BAUDRATE    B115200
@@ -15,6 +15,7 @@
 // setup tcp function so that it can be used to talk to fruitjuice plugin
 int connect_to_fruitjuice(const char * ip, int port) {
     int sock = socket(AF_INET, SOCK_STREAM, 0);
+    printf("sock int created");
     if (sock < 0) {
         return -1;
     }
@@ -57,17 +58,31 @@ int setup_pi_connection(const char * device) {
     return fd;
 }
 
+int fruit_juice_test(int sock) {
+    move_player(sock, 0, 0, 0);
+    move_player(sock, 1, 0, 0);
+    put_block(sock, 1, 0, 0, "ACACIA_BUTTON");
+    return 1;
+}
 int main() {
     int sock = connect_to_fruitjuice(PLUGIN_IP, PLUGIN_PORT);
     if (sock < 0) {
         return 1;
     }
+    printf("sock created\n");
+
+    fruit_juice_test(sock);
+    // close(sock);
+    return 0;
+
 
     int pi_fd = setup_pi_connection(PI_PORT);
     if (pi_fd < 0) {
+        printf("error pi_fd not created\n");
         return 1;
     }
-    
+    printf("pi_fd created");
+
     char buffer[256];
     int buf_idx = 0;
     char c;
@@ -102,6 +117,6 @@ int main() {
             }
         }
     }
-    close(sock);
+    // close(sock);
     return 0;
 }
