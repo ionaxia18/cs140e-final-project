@@ -1,4 +1,5 @@
-PROG_SRC := $(wildcard *.c)
+# PROG_SRC := $(wildcard *.c)
+PROG_SRC += test-mtn-gen.c
 
 DIRS := ../tests
 
