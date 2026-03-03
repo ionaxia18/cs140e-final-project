@@ -1,5 +1,5 @@
 #include "rpi.h"
-#include "flatworld.h"
+#include "world.h"
 
 bool test_indices[8][8][8];
 bool expected_indices[8][8][8];

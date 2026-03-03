@@ -1,5 +1,5 @@
 #include "rpi.h"
-#include "flatworld.h"
+#include "world.h"
 
 world_entry_t expected_entries[65536];
 uint32_t count = 0;

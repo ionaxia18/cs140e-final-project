@@ -1,10 +1,11 @@
-# PROG_SRC := $(wildcard *.c)
-PROG_SRC += test-set-block.c
-PROG_SRC += test-set-diff-sizes.c
+PROG_SRC := $(wildcard *.c)
+
+DIRS := ../tests
+
 PROGS := $(PROG_SRC:.c=.bin)
 
 LIBPI     := ../../../libpi
-WORLD_SRC := ../flatworld.c
+WORLD_SRC := ../world.c ../world-gen.c
 
 MEMMAP := $(LIBPI)/memmap
 START  := $(LIBPI)/staff-start.o

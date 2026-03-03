@@ -1,5 +1,6 @@
-#include "flatworld.h"
+#include "world.h"
 #include "rpi.h"
+#include "world-gen.h"
 
 world_key_t world_make_key(world_pos_t p) {
     uint32_t mask = 0x3ff; 
@@ -43,20 +44,6 @@ world_t* world_create(const world_info_t* info) {
 }
 
 void world_reset(world_t* w);
-
-block_t world_base_block(const world_t* w, world_pos_t p) {
-    int16_t y = p.y;
-    if (y == -60) {
-        return BLOCK_GRASS;
-    } else if (y < -60 && y > -63) {
-        return BLOCK_DIRT;
-    } else if (y <= -63 && y > -65) {
-        return BLOCK_BEDROCK;
-    } else {
-        return BLOCK_AIR;
-    }
-}
-
 
 
 // Check if two positions are equal

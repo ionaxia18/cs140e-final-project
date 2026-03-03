@@ -1,6 +1,6 @@
 #include "rpi.h"
-#include "flatworld.h"
-
+#include "world.h"
+#include "world-gen.h"
 
 
 void get_block_info(world_t* w, world_pos_t p) {

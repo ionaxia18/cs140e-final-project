@@ -11,6 +11,7 @@ enum {
     BLOCK_BEDROCK = 1,
     BLOCK_DIRT  = 2,
     BLOCK_GRASS = 3,
+    BLOCK_STONE = 4,
 };
 
 typedef struct {
@@ -74,9 +75,6 @@ void world_reset(world_t* w);
 
 // Check if two positions are equal
 bool block_pos_equal(world_pos_t p1, world_pos_t p2);
-
-// Get base block info at position p from seed
-block_t world_base_block(const world_t* w, world_pos_t p);
 
 // Run hash function to get hash index in edits table
 uint32_t block_hash_index(const world_t* w, world_pos_t p, uint32_t cap);
