@@ -51,9 +51,9 @@ void notmain(void) {
                 world_pos_t p = {x, y, z};
                 uint32_t index = block_hash_index(w, p, w->edits.cap);
                 if (y != -60) {
-                    assert(world_get_entry(w, &entry, p) == false);
+                    assert(world_get_entry(w, p) == NULL);
                 } else {
-                    assert(world_get_entry(w, &entry, p) == true && entry.block == BLOCK_GRASS);
+                    assert(world_get_entry(w, p) != NULL && world_get_entry(w, p)->block == BLOCK_GRASS);
                     test_indices[x + 65][y + 65][z + 65] = true;
                 }
             }

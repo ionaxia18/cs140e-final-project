@@ -1,4 +1,6 @@
-PROG_SRC := $(wildcard *.c)
+# PROG_SRC := $(wildcard *.c)
+PROG_SRC += test-set-block.c
+PROG_SRC += test-set-diff-sizes.c
 PROGS := $(PROG_SRC:.c=.bin)
 
 LIBPI     := ../../../libpi

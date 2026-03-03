@@ -51,7 +51,7 @@ struct world {
 
 typedef uint32_t world_key_t;
 
-
+typedef struct world world_t;
 
 
 /* Create integer key of 10 bit chunks: x bits | y bits | z bits
@@ -65,9 +65,6 @@ world_pos_t world_read_key(world_key_t k);
 // Check if pos is within support range
 bool world_pos_is_valid(world_pos_t p);
 
-
-typedef struct world world_t;
-
 /* Allocate and init world state hash tables
 Returns null if fail */
 world_t* world_create(const world_info_t* info);
@@ -75,14 +72,23 @@ world_t* world_create(const world_info_t* info);
 // Reset world to original state
 void world_reset(world_t* w);
 
+// Check if two positions are equal
+bool block_pos_equal(world_pos_t p1, world_pos_t p2);
+
 // Get base block info at position p from seed
 block_t world_base_block(const world_t* w, world_pos_t p);
 
-// Run hash function to get index in edits table
+// Run hash function to get hash index in edits table
 uint32_t block_hash_index(const world_t* w, world_pos_t p, uint32_t cap);
 
-// Lookup entry in edits table: returns T if found, populates entry
-bool world_get_entry(const world_t* w, world_entry_t* entry, world_pos_t p);
+// Helper to get next open index in table with or without collision. Returns -1 if table is full.
+uint32_t get_next_index(world_entry_t* entries, uint32_t cap, uint32_t key);
+
+// Lookup entry in edits table: returns ptr to entry if found, null if not found
+world_entry_t* world_get_entry(const world_t* w, world_pos_t p);
+
+// Insert entry into edits table: returns T if successful, F if failed
+bool world_set_entry(world_t* w, block_t block, world_pos_t p);
 
 // Get current block info at position p 
 block_t world_get_block(const world_t* w, world_pos_t p);
