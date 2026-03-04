@@ -54,6 +54,7 @@ typedef struct {
 
 struct world {
     const world_info_t* info;
+    world_pos_t player_pos;
     world_table_t edits;
     pending_table_t pending;
 };

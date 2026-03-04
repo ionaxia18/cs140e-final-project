@@ -264,7 +264,7 @@ Disassembly of section .text:
     83b8:	e2504000 	subs	r4, r0, #0, 0
     83bc:	0a00001c 	beq	8434 <world_create+0x8c>
     83c0:	e5845000 	str	r5, [r4]
-    83c4:	e5950010 	ldr	r0, [r5, #16]
+    83c4:	e5950018 	ldr	r0, [r5, #24]
     83c8:	e0800100 	add	r0, r0, r0, lsl #2
     83cc:	e1a00080 	lsl	r0, r0, #1
     83d0:	eb000227 	bl	8c74 <kmalloc>
@@ -272,19 +272,19 @@ Disassembly of section .text:
     83d8:	e3500000 	cmp	r0, #0, 0
     83dc:	01a04000 	moveq	r4, r0
     83e0:	0a000013 	beq	8434 <world_create+0x8c>
-    83e4:	e5953010 	ldr	r3, [r5, #16]
+    83e4:	e5953018 	ldr	r3, [r5, #24]
     83e8:	e5843008 	str	r3, [r4, #8]
     83ec:	e3a03000 	mov	r3, #0, 0
     83f0:	e584300c 	str	r3, [r4, #12]
-    83f4:	e5952014 	ldr	r2, [r5, #20]
+    83f4:	e595201c 	ldr	r2, [r5, #28]
     83f8:	e5842014 	str	r2, [r4, #20]
     83fc:	e5843018 	str	r3, [r4, #24]
-    8400:	e5950014 	ldr	r0, [r5, #20]
+    8400:	e595001c 	ldr	r0, [r5, #28]
     8404:	e0800100 	add	r0, r0, r0, lsl #2
     8408:	e1a00080 	lsl	r0, r0, #1
     840c:	eb000218 	bl	8c74 <kmalloc>
     8410:	e5840010 	str	r0, [r4, #16]
-    8414:	e5950014 	ldr	r0, [r5, #20]
+    8414:	e595001c 	ldr	r0, [r5, #28]
     8418:	e1a00100 	lsl	r0, r0, #2
     841c:	eb000214 	bl	8c74 <kmalloc>
     8420:	e584001c 	str	r0, [r4, #28]
@@ -1758,7 +1758,7 @@ Disassembly of section .text:
 
 Disassembly of section .rodata:
 
-00009928 <__FUNCTION__.4395-0x9c>:
+00009928 <__FUNCTION__.4396-0x9c>:
     9928:	43415254 	movtmi	r5, #4692	; 0x1254
     992c:	73253a45 			; <UNDEFINED> instruction: 0x73253a45
     9930:	79654b3a 	stmdbvc	r5!, {r1, r3, r4, r5, r8, r9, fp, lr}^
@@ -1799,7 +1799,7 @@ Disassembly of section .rodata:
     99bc:	2e327020 	cdpcs	0, 3, cr7, cr2, cr0, {1}
     99c0:	0000007a 	andeq	r0, r0, sl, ror r0
 
-000099c4 <__FUNCTION__.4395>:
+000099c4 <__FUNCTION__.4396>:
     99c4:	656b616d 	strbvs	r6, [fp, #-365]!	; 0xfffffe93
     99c8:	646e615f 	strbtvs	r6, [lr], #-351	; 0xfffffea1
     99cc:	6165725f 	cmnvs	r5, pc, asr r2
@@ -1854,13 +1854,13 @@ Disassembly of section .rodata:
     9a90:	6c626174 	stfvse	f6, [r2], #-464	; 0xfffffe30
     9a94:	00000065 	andeq	r0, r0, r5, rrx
 
-00009a98 <__FUNCTION__.4429>:
+00009a98 <__FUNCTION__.4430>:
     9a98:	6c726f77 	ldclvs	15, cr6, [r2], #-476	; 0xfffffe24
     9a9c:	65675f64 	strbvs	r5, [r7, #-3940]!	; 0xfffff09c
     9aa0:	6c625f74 	stclvs	15, cr5, [r2], #-464	; 0xfffffe30
     9aa4:	006b636f 	rsbeq	r6, fp, pc, ror #6
 
-00009aa8 <__FUNCTION__.4436>:
+00009aa8 <__FUNCTION__.4437>:
     9aa8:	6c726f77 	ldclvs	15, cr6, [r2], #-476	; 0xfffffe24
     9aac:	65735f64 	ldrbvs	r5, [r3, #-3940]!	; 0xfffff09c
     9ab0:	6c625f74 	stclvs	15, cr5, [r2], #-464	; 0xfffffe30
@@ -2046,7 +2046,7 @@ Disassembly of section .rodata:
     9d58:	6e756f72 	mrcvs	15, 3, r6, cr5, cr2, {3}
     9d5c:	00707564 	rsbseq	r7, r0, r4, ror #10
     9d60:	696c2f2e 	stmdbvs	ip!, {r1, r2, r3, r5, r8, r9, sl, fp, sp}^
-    9d64:	6d2f6362 	stcvs	3, cr6, [pc, #-392]!	; 9be4 <__FUNCTION__.4436+0x13c>
+    9d64:	6d2f6362 	stcvs	3, cr6, [pc, #-392]!	; 9be4 <__FUNCTION__.4437+0x13c>
     9d68:	70636d65 	rsbvc	r6, r3, r5, ror #26
     9d6c:	00632e79 	rsbeq	r2, r3, r9, ror lr
     9d70:	494e4150 	stmdbmi	lr, {r4, r6, r8, lr}^
@@ -6193,7 +6193,7 @@ Disassembly of section .debug_info:
     3e00:	0000011d 	andeq	r0, r0, sp, lsl r1
     3e04:	0000082e 	andeq	r0, r0, lr, lsr #16
     3e08:	00002c0c 	andeq	r2, r0, ip, lsl #24
-    3e0c:	1b001700 	blne	9a14 <__FUNCTION__.4395+0x50>
+    3e0c:	1b001700 	blne	9a14 <__FUNCTION__.4396+0x50>
     3e10:	029905f0 	addseq	r0, r9, #240, 10	; 0x3c000000
     3e14:	00085507 	andeq	r5, r8, r7, lsl #10
     3e18:	05491800 	strbeq	r1, [r9, #-2048]	; 0xfffff800
@@ -11390,7 +11390,7 @@ Disassembly of section .debug_abbrev:
      a24:	00240200 	eoreq	r0, r4, r0, lsl #4
      a28:	0b3e0b0b 	bleq	f8365c <__bss_end__+0xf79794>
      a2c:	00000803 	andeq	r0, r0, r3, lsl #16
-     a30:	0b002403 	bleq	9a44 <__FUNCTION__.4395+0x80>
+     a30:	0b002403 	bleq	9a44 <__FUNCTION__.4396+0x80>
      a34:	030b3e0b 	movweq	r3, #48651	; 0xbe0b
      a38:	0400000e 	streq	r0, [r0], #-14
      a3c:	0b0b000f 	bleq	2c0a80 <__bss_end__+0x2b6bb8>
@@ -11543,7 +11543,7 @@ Disassembly of section .debug_abbrev:
      c88:	00240200 	eoreq	r0, r4, r0, lsl #4
      c8c:	0b3e0b0b 	bleq	f838c0 <__bss_end__+0xf799f8>
      c90:	00000803 	andeq	r0, r0, r3, lsl #16
-     c94:	0b002403 	bleq	9ca8 <__FUNCTION__.4436+0x200>
+     c94:	0b002403 	bleq	9ca8 <__FUNCTION__.4437+0x200>
      c98:	030b3e0b 	movweq	r3, #48651	; 0xbe0b
      c9c:	0400000e 	streq	r0, [r0], #-14
      ca0:	0b0b000f 	bleq	2c0ce4 <__bss_end__+0x2b6e1c>

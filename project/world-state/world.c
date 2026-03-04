@@ -28,6 +28,7 @@ bool world_pos_is_valid(world_pos_t p) {
     return p.x >= -512 && p.x <= 511 && p.y >= -512 && p.y <= 511 && p.z >= -512 && p.z <= 511;
 }
 
+// to do: this should somehow link to how the fruitjuice server is being started up
 world_t* world_create(const world_info_t* info) {
     world_t* w = kmalloc(sizeof(world_t));
     if (!w) {
@@ -50,6 +51,7 @@ world_t* world_create(const world_info_t* info) {
         return NULL;
     }
 
+    w->player_pos = (world_pos_t){0, 0, 0};
     return w;
 }
 
