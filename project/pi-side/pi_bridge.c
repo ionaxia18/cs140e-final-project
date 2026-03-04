@@ -98,7 +98,7 @@ void change_block(char c) {
 void update_rotation(world_t* w, uint16_t dx, uint16_t dy) {
     player_t* player = w->player;
     // idk how to scale the rotation
-    uart_put_str("ROTATION ");
+    uart_put_str("ROT ");
     uart_put_int(dx);
     uart_put_str(" ");
     uart_put_int(dy);

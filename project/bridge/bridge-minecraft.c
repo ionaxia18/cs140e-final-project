@@ -129,7 +129,7 @@ int main() {
                 }
             }
             else if (sscanf(buffer, "%15s %d %d", cmd, &dx, &dy) == 3) {
-                if (strcmp(cmd, "PLAYER_ROT") == 0) {
+                if (strcmp(cmd, "ROT") == 0) {
                     send_player_rotation(sock, dx, dy);
                     printf("send player rotation %d %d\n", dx, dy);
                 }

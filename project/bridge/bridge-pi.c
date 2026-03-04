@@ -77,6 +77,7 @@ int main() {
     printf("starting bridge-pi\n");
     fd = open(PI_PORT, O_RDWR | O_NOCTTY);
     if (fd < 0) {
+        printf("open failed: %s\n", strerror(errno));
         return 1;
     }
     printf("fd opened\n");
