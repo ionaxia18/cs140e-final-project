@@ -6,10 +6,11 @@
 #include <arpa/inet.h>
 #include <termios.h>
 #include <fcntl.h>
+#include "../constants.h"
 
 #define PLUGIN_IP "127.0.0.1"
 #define PLUGIN_PORT 4711
-#define PI_PORT "/dev/cu.usbserial-110"
+
 #define BAUDRATE    B115200
 
 // setup tcp function so that it can be used to talk to fruitjuice plugin

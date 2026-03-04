@@ -1,7 +1,7 @@
 #include "pi_bridge.h"
 #include "../../libpi/rpi.h"
+#include "constants.h"
 
-#define SERIAL_PORT "/dev/cu.usbserial-110"
 #define BAUDRATE B115200
 
 struct coords p_coords = {235, 65, -1};
