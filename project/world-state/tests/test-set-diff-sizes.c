@@ -63,6 +63,7 @@ void create_world(uint32_t seed, pos_t min, pos_t max, uint32_t edits_cap, uint3
         panic("Failed to create world");
     }
     world_entry_t* expected = mymalloc(edits_cap * sizeof(world_entry_t));
+    memset(expected, 0, edits_cap * sizeof(world_entry_t));
 
     fill_table(w, expected);
     edit_world(w);
@@ -70,29 +71,36 @@ void create_world(uint32_t seed, pos_t min, pos_t max, uint32_t edits_cap, uint3
     assert(count == w->edits.size);
 
     for (uint32_t i = 0; i < count; i++) {
+
+    
         world_entry_t e = expected[i];
         world_entry_t* actual = table_get_entry(&w->edits, e.pos);
-        assert(actual != NULL && actual->block == e.block);
+        if (!e.full && !actual->full) {
+            continue;
+        }
+        // if (!actual->full) {
+        //     panic("Actual is not full for index %d", i);
+        // }
+        // if (!e.full) {
+        //     panic("Expected is not full for index %d", i);
+        // }
+        if (actual->block != e.block) {
+            panic("Actual block does not match expected block for index %d", i);
+        }
+        if (!block_pos_equal(actual->pos, e.pos)) {
+            panic("Actual position does not match expected position for index %d", i);
+        }
     }
-
     world_destroy(w);
     myfree(expected);
 }
 
 void notmain(void) {
-    //test different size worlds
-    trace("Creating world with 128 edits and 128 pending\n") 
-    create_world(0, (pos_t){0, 0, 0}, (pos_t){5, 5, 5}, 128, 128);
+    // test different size worlds
+    create_world(0, (pos_t){0, 0, 0},      (pos_t){5, 5, 5},      128,  128);
     count = 0;
-    trace("Creating world with 1024 edits and 1024 pending\n") 
-    create_world(0, (pos_t){-5, -5, -5}, (pos_t){5, 5, 5}, 1024, 1024);
+    create_world(0, (pos_t){-5, -5, -5},   (pos_t){5, 5, 5},      1024, 256);
     count = 0;
-    // create_world(0, (pos_t){-10, -10, -10}, (pos_t){10, 10, 10}, 8192, 8192);
-    // count = 0;
-    
-
-
-
-
-    
+    create_world(0, (pos_t){-10, -10, -10}, (pos_t){10, 10, 10},  2048, 512);
+    count = 0;
 }

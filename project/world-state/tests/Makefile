@@ -1,6 +1,6 @@
-# PROG_SRC := $(wildcard *.c)	
+PROG_SRC := $(wildcard *.c)	
 # PROG_SRC += test-mtn-gen.c
-PROG_SRC := test-set-diff-sizes.c
+# PROG_SRC := test-set-diff-sizes.c
 
 DIRS := ../tests
 

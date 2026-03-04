@@ -60,6 +60,7 @@ bool table_set_entry(world_table_t* t, block_t block, pos_t p) {
     node->block = block;
     node->pos   = p;
     node->next  = t->entries[idx];
+    node->full = true;
     t->entries[idx] = node;
     t->size++;
     return true;

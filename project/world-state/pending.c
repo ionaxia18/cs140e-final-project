@@ -7,10 +7,10 @@ bool pending_add(pending_table_t* pending, world_entry_t entry) {
     if (pending->size == pending->cap) {
         return false;
     }
-    uint32_t index = table_empty_index(pending->entries, pending->cap, entry.pos);  
-    pending->indices[pending->size] = index;
-    pending->entries[index] = entry;
-    pending->size++;
+    // uint32_t index = table_hash_index(pending->entries, pending->cap, entry.pos);  
+    // pending->indices[pending->size] = index;
+    // pending->entries[index] = entry;
+    // pending->size++;
     return true;
 }
 

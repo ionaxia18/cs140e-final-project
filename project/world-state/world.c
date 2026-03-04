@@ -110,14 +110,10 @@ bool world_set_block(world_t* w, pos_t p, block_t new_block) {
         return false;
     }
 
-    world_entry_t* entry = table_get_entry(&w->edits, p);
-    if (!entry) {
-        if (!table_set_entry(&w->edits, new_block, p)) {
-            trace("Failed to set block in edits table");
-            return false;
-        }
-    } else {
-        trace("Updating existing entry for block at %d, %d, %d\n", p.x, p.y, p.z);
+
+    if (!table_set_entry(&w->edits, new_block, p)) {
+        trace("Failed to set block in edits table");
+        return false;
     }
 
     if (!pending_add(&w->pending, (world_entry_t){ new_block, p, true, NULL })) {
