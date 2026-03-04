@@ -2,48 +2,15 @@
 #include "world.h"
 #include "hashtable.h"
 
-world_entry_t expected_entries[1024];
-uint32_t count = 0;
-
-void fill_table(world_t* w) {
-    for (int x = w->info->min.x; x < w->info->max.x; x += 2) {
-        for (int y = w->info->min.y; y < w->info->max.y; y += 2) {
-            for (int z = w->info->min.z; z < w->info->max.z; z += 2) {
-                pos_t p = {x, y, z};
-                uint32_t index = table_empty_index(expected_entries, w->edits.cap, p);
-                expected_entries[index] = (world_entry_t){BLOCK_GRASS, p, true};
-                count++;
-            }
-        }
-    }
-    trace("Count: %d\n", count);
-}
-
-
-void compare_world(world_t* w) {
-    for (int i = 0; i < w->edits.cap; i++) {
-        if (expected_entries[i].full != w->edits.entries[i].full) {
-            trace("Fullness differs at index %d\n", i);
-            assert(false);
-        }
-        if (expected_entries[i].full) {
-            if (expected_entries[i].block != w->edits.entries[i].block || !block_pos_equal(expected_entries[i].pos, w->edits.entries[i].pos)) {
-                trace("Differs at index %d\n", i);
-                assert(false);
-            }
-        }
-    }
-    
-    trace("Comparison test passed\n");
-}
+static uint32_t count = 0;
 void notmain(void) {
     // create sample config for world
     world_info_t info = {
         .seed = 0,
         .min = (pos_t){-20, -20, -20},
         .max = (pos_t){0, 0, 0},
-        .edits_cap = 8192,
-        .pending_cap = 8192,
+        .edits_cap = 2048,
+        .pending_cap = 1024,
     };
     trace("Size of world_entry_t: %d\n", sizeof(world_entry_t));
 
@@ -53,29 +20,40 @@ void notmain(void) {
     };
 
     world_t* w = world_create(&info, &player);
-
-
-
     if (!w) {
         panic("Failed to create world");
     }
 
-    fill_table(w);
-
     for (int x = w->info->min.x; x < w->info->max.x; x += 2) {
         for (int y = w->info->min.y; y < w->info->max.y; y += 2) {
             for (int z = w->info->min.z; z < w->info->max.z; z += 2) {
-                pos_t p = {x, y, z};
+                pos_t p = (pos_t){x, y, z};
                 world_set_block(w, p, BLOCK_GRASS);
+                count++;
             }
         }
     }
-  
+
     trace("Count: %d, Size: %d\n", count, w->edits.size);
     assert(count == w->edits.size);
 
-    compare_world(w);
-    //assert(memcmp(w->edits.entries, expected_entries, w->edits.cap * sizeof(world_entry_t)) == 0);
-    
-    
+    for (int x = w->info->min.x; x < w->info->max.x; x++) {
+        for (int y = w->info->min.y; y < w->info->max.y; y++) {
+            for (int z = w->info->min.z; z < w->info->max.z; z++) {
+                pos_t p = (pos_t){x, y, z};
+                bool is_step2 = ((x - w->info->min.x) % 2 == 0) &&
+                                ((y - w->info->min.y) % 2 == 0) &&
+                                ((z - w->info->min.z) % 2 == 0);
+                world_entry_t* e = table_get_entry(&w->edits, p);
+                if (is_step2) {
+                    assert(e != NULL && e->block == BLOCK_GRASS);
+                } else {
+                    assert(e == NULL);
+                }
+            }
+        }
+    }
+
+    trace("Comparison test passed\n");
+    world_destroy(w);
 }

@@ -32,5 +32,6 @@ void notmain(void) {
     make_and_read_key((pos_t){0, -512, 1});
     make_and_read_key((pos_t){0, -512, -1});
     make_and_read_key((pos_t){-512, -512, -512});
+    trace("Key functions test passed\n");
 
 }

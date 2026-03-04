@@ -16,20 +16,21 @@ enum {
     BLOCK_STONE = 4,
 };
 
-typedef struct {
+typedef struct world_entry {
     block_t block;
     pos_t pos;
     bool full;
+    struct world_entry* next;
 } world_entry_t;
 
 typedef struct {
-    world_entry_t* entries;
+    world_entry_t** entries;   // hash buckets for edits (separate chaining)
     uint32_t cap;
     uint32_t size;
 } world_table_t;
 
 typedef struct {
-    world_entry_t* entries;
+    world_entry_t* entries;    // flat array used by pending buffer
     uint32_t cap;
     uint32_t size;
     uint32_t* indices;
@@ -94,6 +95,10 @@ bool world_set_block(world_t* w, pos_t p, block_t new_block);
 static inline bool world_break_block(world_t* w, pos_t p) {
     return world_set_block(w, p, BLOCK_AIR);
 }
+
+// Free world
+void world_destroy(world_t* w);
+
 
 #endif // WORLD_H
 

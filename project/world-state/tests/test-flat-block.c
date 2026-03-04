@@ -49,6 +49,7 @@ void notmain(void) {
             }
         }
     }
+    world_destroy(w);
     trace("Flat block test passed\n");
 
 }

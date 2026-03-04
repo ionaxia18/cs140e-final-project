@@ -29,8 +29,8 @@ void notmain(void) {
         .seed = 1,
         .min = (pos_t){0, -60, 0},
         .max = (pos_t){16, -44, 16},
-        .edits_cap = 4096,
-        .pending_cap = 4096,
+        .edits_cap = 2048,
+        .pending_cap = 2048,
     };
 
     player_t player = {.player_id = 0,
@@ -48,6 +48,7 @@ void notmain(void) {
     print_mtns(w, second);
 
     assert(memcmp(first, second, sizeof(first)) == 0);
+    world_destroy(w);
     trace("Comparison test passed\n");
 
 }

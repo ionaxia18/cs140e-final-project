@@ -1,16 +1,16 @@
-PROG_SRC := $(wildcard *.c)
-# PROG_SRC += test-mtn-gen.c
+#PROG_SRC := $(wildcard *.c)	
+PROG_SRC += test-delete-destroy.c
+# PROG_SRC := test-set-diff-sizes.c
 
 DIRS := ../tests
 
 PROGS := $(PROG_SRC:.c=.bin)
 
 LIBPI     := ../../../libpi
-WORLD_SRC := ../world.c ../world-gen.c ../hashtable.c ../pending.c
+WORLD_SRC := ../world.c ../world-gen.c ../../heap/allocator.c ../hashtable.c ../pending.c
 
 MEMMAP := $(LIBPI)/memmap
 START  := $(LIBPI)/staff-start.o
-KMALLOC := $(LIBPI)/staff-objs/staff-kmalloc.o
 LPI    := $(LIBPI)/libpi.a
 
 ARM  := arm-none-eabi

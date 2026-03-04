@@ -1,7 +1,11 @@
 #include "world.h"
 #include "hashtable.h"
 #include "pending.h"
+#include "../heap/allocator.h"
 
+static char heap[64 * 1500];
+static size_t heap_size = sizeof(heap);
+static void* heap_start = heap;
 
 world_key_t world_make_key(pos_t p) {
     uint32_t mask = 0x3ff; 
@@ -30,32 +34,51 @@ bool world_pos_is_valid(pos_t p) {
 
 // to do: this should somehow link to how the fruitjuice server is being started up
 world_t* world_create(const world_info_t* info, player_t* player) {
-    world_t* w = kmalloc(sizeof(world_t));
+    myinit(heap_start, heap_size);
+    world_t* w = mymalloc(sizeof(world_t));
     if (!w) {
+        trace("Failed to allocate memory for world");
         return NULL;
     }
     w->info = info;
-    w->edits.entries = kmalloc(info->edits_cap * sizeof(world_entry_t));
-    if (!w->edits.entries) {
-        return NULL;
-    }
+
     w->edits.cap = info->edits_cap;
     w->edits.size = 0;
-
+    w->edits.entries = mymalloc(w->edits.cap * sizeof(world_entry_t*));
+    if (!w->edits.entries) {
+        trace("Failed to allocate memory for edits table");
+        return NULL;
+    }
+    memset(w->edits.entries, 0, w->edits.cap * sizeof(world_entry_t*));
 
     w->pending.cap = info->pending_cap;
     w->pending.size = 0;
-    w->pending.entries = kmalloc(info->pending_cap * sizeof(world_entry_t));
-    w->pending.indices = kmalloc(info->pending_cap * sizeof(uint32_t));
+    w->pending.entries = mymalloc(w->pending.cap * sizeof(world_entry_t));
+    w->pending.indices = mymalloc(w->pending.cap * sizeof(uint32_t));
     if (!w->pending.entries || !w->pending.indices) {
+        trace("Failed to allocate memory for pending table");
         return NULL;
     }
+    memset(w->pending.entries, 0, w->pending.cap * sizeof(world_entry_t));
+    memset(w->pending.indices, 0, w->pending.cap * sizeof(uint32_t));
 
     w->player = player;
     return w;
 }
 
-void world_reset(world_t* w);
+void world_destroy(world_t* w) {
+    for (uint32_t i = 0; i < w->edits.cap; i++) {
+        world_entry_t* cur = w->edits.entries[i];
+        while (cur) {
+            world_entry_t* next = cur->next;
+            myfree(cur);
+            cur = next;
+        }
+    }
+    myfree(w->edits.entries);
+    myfree(w->pending.entries);
+    myfree(w);
+}
 
 
 // Check if two positions are equal
@@ -87,18 +110,13 @@ bool world_set_block(world_t* w, pos_t p, block_t new_block) {
         return false;
     }
 
-    world_entry_t* entry = table_get_entry(&w->edits, p);
-    if (!entry) {
-        if (!table_set_entry(&w->edits, new_block, p)) {
-            trace("Failed to set block in edits table");
-            return false;
-        }
-    } else {
-        trace("Updating existing entry for block at %d, %d, %d\n", p.x, p.y, p.z);
-        entry->block = new_block;
+
+    if (!table_set_entry(&w->edits, new_block, p)) {
+        trace("Failed to set block in edits table");
+        return false;
     }
 
-    if (!pending_add(&w->pending, (world_entry_t){new_block, p, true})) {
+    if (!pending_add(&w->pending, (world_entry_t){ new_block, p, true, NULL })) {
         trace("Failed to add entry to pending table");
         return false;
     }
