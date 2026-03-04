@@ -1,5 +1,4 @@
-#include "./allocator.h"
-#include "./debug_break.h"
+#include "allocator.h"
 #include <string.h>
 #include <stdio.h>
 #include <assert.h>
@@ -283,87 +282,4 @@ void *myrealloc(void *old_ptr, size_t new_size) {
     myfree(old_ptr);
     nused += check_size(cur_block->payload) - old_size;
     return malloc_ptr;
-}
-
-/* Function: validate_heap
- * -----------------
- * This function is a debugging function that walks through each segment of the heap
- * and the free list, starting from the beginning in both cases. 
- * It has various checks to validate the accuracy and status of the heap.
- * It returns true if there are no errors, and false otherwise.  
- */
-bool validate_heap() {  
-    freelist *cur_block = segment_start;
-    size_t num_free = 0;
-    size_t num_malloc = 0;
-    size_t count_bytes = 0;   
-    while (cur_block < segment_end) {  // first walk through all the blocks in the heap       
-        size_t cur_size = check_size(cur_block->payload);        
-        if (cur_size > segment_size) {
-            breakpoint();
-            return false;
-        }      
-        if (check_status(cur_block->payload)) {
-            num_malloc++;       
-            count_bytes += cur_size;
-        } else {
-            num_free++;
-        }       
-        cur_block = next_block(cur_block);      
-    }
-    if (num_malloc != malloc_calls - free_calls) {
-        breakpoint();
-        return false;
-    }
-    if (cur_block != segment_end) {  // should end up at the heap end
-        breakpoint();
-        return false;
-    }
-    if (nused != count_bytes) {
-        breakpoint();
-        return false;
-    }
-    freelist *cur_free = list_head; 
-    size_t total = 0;
-    while (cur_free) {  // walk through the free list 
-        if (check_size(cur_free->payload) > segment_size) { 
-            breakpoint();
-            return false;
-        }
-        if (check_status(cur_free->payload)) {
-            breakpoint();
-            return false;
-        }
-        total++;      
-        cur_free = cur_free->next;
-    }
-    if (total != num_free) {
-        breakpoint();
-        return false;
-    }
-    return true;
-}
-
-/* Function: dump_heap
- * -------------------
- * This function prints out the the block contents of the heap. It is not
- * called anywhere, but is a useful helper function to call from gdb when
- * tracing through programs. It prints out the total range of the heap, and
- * information about each block within it.
- */
-void dump_heap() {   
-    freelist *cur_block = segment_start;
-    size_t count = 0;
-    while (cur_block < segment_end) {
-        size_t block_size = check_size(cur_block->payload);
-        size_t status = check_status(cur_block->payload);    
-        if (status) {
-            printf("used ");
-        } else {
-            printf("free ");
-        }
-        printf("header %p 8+%zu\n", cur_block, block_size);       
-        count++;
-        cur_block = (freelist *)((char *)cur_block + block_size + HEADER_BYTES);
-    }   
 }

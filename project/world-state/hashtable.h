@@ -23,4 +23,7 @@ world_entry_t* table_get_entry(const world_table_t* t, pos_t p);
 // Insert entry into table: returns T if successful, F if failed
 bool table_set_entry(world_table_t* t, block_t block, pos_t p);
 
+// Delete entry for position p if present: returns T if deleted, F if not found.
+bool table_delete_entry(world_table_t* t, pos_t p);
+
 #endif // HASHTABLE_H

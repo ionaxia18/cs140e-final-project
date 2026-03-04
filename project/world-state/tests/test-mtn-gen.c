@@ -48,6 +48,7 @@ void notmain(void) {
     print_mtns(w, second);
 
     assert(memcmp(first, second, sizeof(first)) == 0);
+    world_destroy(w);
     trace("Comparison test passed\n");
 
 }

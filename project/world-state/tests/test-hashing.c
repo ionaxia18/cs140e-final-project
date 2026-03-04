@@ -14,9 +14,8 @@ void fill_table(world_t* w) {
             pos_t p = {x, -60, z};
             uint32_t index = table_hash_index(p, w->edits.cap);
             trace("Index for pos %d, %d, %d is %d\n", x, -60, z, index);
-            w->edits.entries[index] = entry;
-            w->edits.entries[index].pos = p;
-       
+            assert(table_set_entry(&w->edits, BLOCK_GRASS, p));
+            
             expected_indices[x + 65][-60 + 65][z + 65] = true;
             w->edits.size++;
         }
@@ -66,5 +65,6 @@ void notmain(void) {
         }
     }
     assert(memcmp(test_indices, expected_indices, sizeof(test_indices)) == 0);
+    world_destroy(w);
     trace("Comparison test passed\n");
 }
