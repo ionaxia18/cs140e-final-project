@@ -32,28 +32,28 @@ void enable_raw_keyboard_mode() {
 }
 
 CGEventRef trackpad_event_handler(CGEventTapProxy proxy, CGEventType type, CGEventRef event, void *refcon) {
-    static int accum_dx = 0;
-    static int accum_dy = 0;
-    static struct timespec last_send = {0,0};
+    // static int accum_dx = 0;
+    // static int accum_dy = 0;
+    // static struct timespec last_send = {0,0};
 
-    if (type != kCGEventScrollWheel) {
-        return event;
-    }
-    int dx = (int)CGEventGetDoubleValueField(event, kCGScrollWheelEventDeltaAxis1);
-    int dy = (int)CGEventGetDoubleValueField(event, kCGScrollWheelEventDeltaAxis2);  
-    accum_dx += dx;
-    accum_dy += dy;
-    struct timespec now;
-    clock_gettime(CLOCK_MONOTONIC, &now);
-    if (now.tv_sec - last_send.tv_sec + (now.tv_nsec - last_send.tv_nsec) / 1000000000.0 > SEND_INTERVAL) {
-        char buffer[32];
-        int len = snprintf(buffer, sizeof(buffer), "m %d %d\n", accum_dx, accum_dy);
-        printf("sending mouse move %d %d\n", accum_dx, accum_dy);
-        write(fd, buffer, len);\
-        accum_dx = 0;
-        accum_dy = 0;
-        last_send = now;
-    }
+    // if (type != kCGEventScrollWheel) {
+    //     return event;
+    // }
+    // int dx = (int)CGEventGetDoubleValueField(event, kCGScrollWheelEventDeltaAxis1);
+    // int dy = (int)CGEventGetDoubleValueField(event, kCGScrollWheelEventDeltaAxis2);  
+    // accum_dx += dx;
+    // accum_dy += dy;
+    // struct timespec now;
+    // clock_gettime(CLOCK_MONOTONIC, &now);
+    // if (now.tv_sec - last_send.tv_sec + (now.tv_nsec - last_send.tv_nsec) / 1000000000.0 > SEND_INTERVAL) {
+    //     char buffer[32];
+    //     int len = snprintf(buffer, sizeof(buffer), "m %d %d\n", accum_dx, accum_dy);
+    //     printf("sending mouse move %d %d\n", accum_dx, accum_dy);
+    //     write(fd, buffer, len);\
+    //     accum_dx = 0;
+    //     accum_dy = 0;
+    //     last_send = now;
+    // }
     return event;
 }
 

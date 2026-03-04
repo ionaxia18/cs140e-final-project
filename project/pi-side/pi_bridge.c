@@ -12,26 +12,35 @@ struct coords p_coords = {235, 65, -1};
 char * block = "STONE";
 
 void uart_put_int(int val) {
-    char buf[11];
-    int i = 10;
-    buf[i] = '\0';
-    i -= 1;
+    char buf[12];              // enough for -2147483648 + '\0'
+    int i = 0;
+
+    if (val == 0) {
+        uart_put8('0');
+        return;
+    }
 
     if (val < 0) {
         uart_put8('-');
+        // avoid overflow on INT_MIN if you care:
+        // unsigned u = (unsigned)(-(val+1)) + 1;
         val = -val;
     }
 
-    if (val == 0) buf[i] = '0';
-    i -= 1;
     while (val > 0) {
-        buf[i] = '0' + (val % 10);
-        i -= 1;
+        buf[i++] = '0' + (val % 10);
         val /= 10;
     }
-    i++;
-    for (; buf[i] != '\0'; i++) {
+
+    while (i--) {
         uart_put8(buf[i]);
+    }
+}
+
+
+void uart_put_str(char* str) {
+    for (int i = 0; str[i] != '\0'; i++) {
+        uart_put8(str[i]);
     }
 }
 
@@ -53,16 +62,14 @@ void do_move(world_t* w, char c) {
     } 
     
     w->player_pos = new_coord;
-
-    const char *str = "PLAYER";
-    for (size_t i = 0; str[i] != '\0'; i++) {
-        uart_put8((uint8_t) str[i]);
-    }
-    uart_put8(' ');
+    
+    uart_put_str("PLAYER ");
     uart_put_int(new_coord.x);
+    uart_put_str(" ");
     uart_put_int(new_coord.y);
+    uart_put_str(" ");
     uart_put_int(new_coord.z);
-    uart_put8('\n');
+    uart_put_str("\n");
  }
 
 void change_block(char c) {
@@ -124,4 +131,5 @@ void notmain() {
             }
         }
     }
+    uart_flush_tx();
 }
