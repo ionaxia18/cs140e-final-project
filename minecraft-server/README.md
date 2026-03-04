@@ -25,9 +25,9 @@ Step 7: Run server from minecraft-server folder
 java -Xmx2048M -Xms2048M -jar paper-1.21.11-126.jar   
 Might need to edit name of the file so it matches your filename  
 
-Step 8: Download and start up Minecraft  
-Select Multiplayer  
-Select Add Server, enter this ip address. Will load you into the world.   
-This only works if the ngrok tunnel is running.  
-8.tcp.us-cal-1.ngrok.io:19389  
+Step 8: Download and start up Minecraft
+Select Multiplayer
+Select Add Server, enter this ip address. Will load you into the world. 
+This only works if the ngrok tunnel is running.
+6.tcp.us-cal-1.ngrok.io:16740
 
