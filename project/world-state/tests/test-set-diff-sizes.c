@@ -1,5 +1,6 @@
 #include "rpi.h"
 #include "world.h"
+#include "hashtable.h"
 
 uint32_t count = 0;
 
@@ -29,8 +30,7 @@ void fill_table(world_t* w, world_entry_t* expected_entries) {
         for (int y = w->info->min.y; y < w->info->max.y; y += 2) {
             for (int z = w->info->min.z; z < w->info->max.z; z += 2) {
                 world_pos_t p = {x, y, z};
-                uint32_t start = block_hash_index(w, p, w->edits.cap);
-                uint32_t index = get_next_index(expected_entries, w->edits.cap, start);
+                uint32_t index = table_empty_index(expected_entries, w->edits.cap, p);
                 bool is_step4 = (x - w->info->min.x) % 4 == 0
                                 && (y - w->info->min.y) % 4 == 0
                                 && (z - w->info->min.z) % 4 == 0;
@@ -92,11 +92,11 @@ void create_world(uint32_t seed, world_pos_t min, world_pos_t max, uint32_t edit
 
 void notmain(void) {
     //test different size worlds
-    create_world(0, (world_pos_t){0, 0, 0}, (world_pos_t){5, 5, 5}, 125, 125);
+    create_world(0, (world_pos_t){0, 0, 0}, (world_pos_t){5, 5, 5}, 128, 128);
     count = 0;
-    create_world(0, (world_pos_t){-5, -5, -5}, (world_pos_t){5, 5, 5}, 1000, 1000);
+    create_world(0, (world_pos_t){-5, -5, -5}, (world_pos_t){5, 5, 5}, 1024, 1024);
     count = 0;
-    create_world(0, (world_pos_t){-10, -10, -10}, (world_pos_t){10, 10, 10}, 8000, 8000);
+    create_world(0, (world_pos_t){-10, -10, -10}, (world_pos_t){10, 10, 10}, 8192, 8192);
     count = 0;
     
 

@@ -1,5 +1,7 @@
 #include "rpi.h"
 #include "world.h"
+#include "hashtable.h"
+#include "world-gen.h"  
 
 bool test_indices[8][8][8];
 bool expected_indices[8][8][8];
@@ -13,7 +15,7 @@ void fill_table(world_t* w) {
     for (int x = w->info->min.x; x < w->info->max.x; x++) {
         for (int z = w->info->min.z; z < w->info->max.z; z++) {
             world_pos_t p = {x, -60, z};
-            uint32_t index = block_hash_index(w, p, w->edits.cap);
+            uint32_t index = table_hash_index(p, w->edits.cap);
             trace("Index for pos %d, %d, %d is %d\n", x, -60, z, index);
             w->edits.entries[index] = entry;
             w->edits.entries[index].pos = p;
@@ -49,11 +51,11 @@ void notmain(void) {
         for (int y = w->info->min.y; y < w->info->max.y; y++) {
             for (int z = w->info->min.z; z < w->info->max.z; z++) {
                 world_pos_t p = {x, y, z};
-                uint32_t index = block_hash_index(w, p, w->edits.cap);
+                uint32_t index = table_hash_index(p, w->edits.cap);
                 if (y != -60) {
-                    assert(world_get_entry(w, p) == NULL);
+                    assert(table_get_entry(&w->edits, p) == NULL);
                 } else {
-                    assert(world_get_entry(w, p) != NULL && world_get_entry(w, p)->block == BLOCK_GRASS);
+                    assert(table_get_entry(&w->edits, p) != NULL && table_get_entry(&w->edits, p)->block == BLOCK_GRASS);
                     test_indices[x + 65][y + 65][z + 65] = true;
                 }
             }

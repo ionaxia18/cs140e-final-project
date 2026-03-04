@@ -1,7 +1,7 @@
 #include "rpi.h"
 #include "world.h"
 #include "world-gen.h"
-
+#include "hashtable.h"
 world_pos_t first[150];
 world_pos_t second[150];
 

@@ -1,7 +1,8 @@
 #include "rpi.h"
 #include "world.h"
+#include "hashtable.h"
 
-world_entry_t expected_entries[65536];
+world_entry_t expected_entries[1024];
 uint32_t count = 0;
 
 void fill_table(world_t* w) {
@@ -9,8 +10,7 @@ void fill_table(world_t* w) {
         for (int y = w->info->min.y; y < w->info->max.y; y += 2) {
             for (int z = w->info->min.z; z < w->info->max.z; z += 2) {
                 world_pos_t p = {x, y, z};
-                uint32_t start = block_hash_index(w, p, w->edits.cap);
-                uint32_t index = get_next_index(expected_entries, w->edits.cap, start);
+                uint32_t index = table_empty_index(expected_entries, w->edits.cap, p);
                 expected_entries[index] = (world_entry_t){BLOCK_GRASS, p, true};
                 count++;
             }
@@ -41,9 +41,9 @@ void notmain(void) {
     world_info_t info = {
         .seed = 0,
         .min = (world_pos_t){-20, -20, -20},
-        .max = (world_pos_t){20, 20, 20},
-        .edits_cap = 65536,
-        .pending_cap = 65536,
+        .max = (world_pos_t){0, 0, 0},
+        .edits_cap = 8192,
+        .pending_cap = 8192,
     };
     trace("Size of world_entry_t: %d\n", sizeof(world_entry_t));
 
