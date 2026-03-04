@@ -1,11 +1,11 @@
 #include "pi_bridge.h"
 #include "../../libpi/rpi.h"
 
-#define SERIAL_PORT "/dev/cu.SLAB_USBtoUART"
+#define SERIAL_PORT "/dev/cu.usbserial-110"
 #define BAUDRATE B115200
 
-struct coords p_coords = {0, 0, 0};
-char * block = "stone";
+struct coords p_coords = {235, 65, -1};
+char * block = "STONE";
 
 void uart_put_int(int val) {
     char buf[11];
@@ -49,9 +49,7 @@ void do_move(char c) {
     }
     uart_put8(' ');
     uart_put_int(p_coords.x);
-    uart_put8(' ');
     uart_put_int(p_coords.y);
-    uart_put8(' ');
     uart_put_int(p_coords.z);
     uart_put8('\n');
  }
@@ -62,7 +60,7 @@ void change_block(char c) {
         cur_block = block;
     }
     else if (c == 'r') {
-        cur_block = "air";
+        cur_block = "AIR";
     }
     const char *str = "BLOCK";
     for (size_t i = 0; str[i] != '\0'; i++) {
@@ -70,11 +68,8 @@ void change_block(char c) {
     }
     uart_put8(' ');
     uart_put_int(p_coords.x);
-    uart_put8(' ');
     uart_put_int(p_coords.y);
-    uart_put8(' ');
     uart_put_int(p_coords.z);
-    uart_put8(' ');
     for (size_t i = 0; cur_block[i] != '\0'; i++) {
         uart_put8((uint8_t) cur_block[i]);
     }
