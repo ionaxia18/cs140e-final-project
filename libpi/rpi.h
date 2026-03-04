@@ -202,7 +202,7 @@ void memcpy256(void *dst, const void *src, size_t nbytes);
 
 /* #include <string.h> */
 
-#   include "demand.h"
+#   include "../libunix/demand.h"
 #ifndef RPI_UNIX
 #   define asm_align(x)    asm volatile (".align " _XSTRING(x))
 
@@ -257,10 +257,10 @@ int memiszero(const void *_p, unsigned n);
 #define likely(x)       __builtin_expect((x),1)
 #define unlikely(x)     __builtin_expect((x),0)
 
-#include "gpio.h"
-#include "rpi-constants.h"
+#include "../libpi/include/gpio.h"
+#include "../libpi/include/rpi-constants.h"
 // any extra prototypes you want to add
-#include "your-prototypes.h"
+#include "../libpi/include/your-prototypes.h"
 
 #define let __auto_type
 
@@ -271,6 +271,6 @@ void * custom_c_runtime_init(void);
 // make a symbol weak.
 #define WEAK(fn) __attribute__((weak)) fn
 
-#include "gpio.h"
+#include "../libpi/include/gpio.h"
 
 #endif

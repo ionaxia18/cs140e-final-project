@@ -6,15 +6,17 @@
 #include <arpa/inet.h>
 #include <termios.h>
 #include <fcntl.h>
+#include "../constants.h"
 
-#define PLUGIN_IP "100.100.1.100"
+#define PLUGIN_IP "127.0.0.1"
 #define PLUGIN_PORT 4711
-#define PI_PORT "/dev/cu.SLAB_USBtoUART"
+
 #define BAUDRATE    B115200
 
 // setup tcp function so that it can be used to talk to fruitjuice plugin
 int connect_to_fruitjuice(const char * ip, int port) {
     int sock = socket(AF_INET, SOCK_STREAM, 0);
+    printf("sock int created");
     if (sock < 0) {
         return -1;
     }
@@ -30,13 +32,19 @@ int connect_to_fruitjuice(const char * ip, int port) {
 
 void put_block(int sock, int x, int y, int z, const char * block) {
     char buf[128];
-    sprintf(buf, "world.setBlock(%d, %d, %d, %s)\n", x, y, z, block);
+    sprintf(buf, "world.setBlock(%d,%d,%d,%s)\n", x, y, z, block);
     send(sock, buf, strlen(buf), 0);
 }
 
 void move_player(int sock, int x, int y, int z) {
     char buf[128];
-    sprintf(buf, "player.setTile(%d, %d, %d)\n", x, y, z);
+    sprintf(buf, "player.setTile(%d,%d,%d)\n", x, y, z);
+    send(sock, buf, strlen(buf), 0);
+}
+
+void send_player_rotation(int sock, int dx, int dy) {
+    char buf[128];
+    sprintf(buf, "player.setRot(%d,%d)\n", dx, dy);
     send(sock, buf, strlen(buf), 0);
 }
 
@@ -57,17 +65,31 @@ int setup_pi_connection(const char * device) {
     return fd;
 }
 
+int fruit_juice_test(int sock) {
+    // move_player(sock, 235, 65, -1);
+    put_block(sock, 235, 65, -1, "DIAMOND_BLOCK");
+    return 1;
+}
+
 int main() {
     int sock = connect_to_fruitjuice(PLUGIN_IP, PLUGIN_PORT);
     if (sock < 0) {
         return 1;
     }
+    printf("sock created\n");
+
+    // fruit_juice_test(sock);
+    // close(sock);
+    // return 0;
+
 
     int pi_fd = setup_pi_connection(PI_PORT);
     if (pi_fd < 0) {
+        printf("error pi_fd not created\n");
         return 1;
     }
-    
+    printf("pi_fd created");
+
     char buffer[256];
     int buf_idx = 0;
     char c;
@@ -79,15 +101,21 @@ int main() {
         if (n <= 0) {
             continue;
         }
+        if (c == '\n' || c == '\r') {
 
-        if (c == '\n') {
+            if (buf_idx > 0 && buffer[buf_idx - 1] == '\r') {
+                buf_idx--;
+            }
+
             buffer[buf_idx] = '\0';
             buf_idx = 0;
 
             char cmd[16];
-            int x, y, z;
+            int x, y, z, dx, dy;
             char block[64];
-        
+
+            printf("%s\n", buffer);
+
             if (sscanf(buffer, "%15s %d %d %d %63s", cmd, &x, &y, &z, block) == 5) {
                 if (strcmp(cmd, "BLOCK") == 0) {
                     put_block(sock, x, y, z, block);
@@ -100,8 +128,24 @@ int main() {
                     printf("move player %d %d %d\n", x, y, z);
                 }
             }
+            else if (sscanf(buffer, "%15s %d %d", cmd, &dx, &dy) == 3) {
+                if (strcmp(cmd, "PLAYER_ROT") == 0) {
+                    send_player_rotation(sock, dx, dy);
+                    printf("send player rotation %d %d\n", dx, dy);
+                }
+            }
+
+        } else {
+            if (buf_idx < sizeof(buffer) - 1) {
+                if (!(c == ' ' || c == '-' || (c >= '0' && c <= '9') ||
+                    (c >= 'A' && c <= 'Z') || (c >= 'a' && c <= 'z'))) {
+                    buffer[buf_idx++] = ' ';   // turn weird separators into spaces
+                } else {
+                buffer[buf_idx++] = c;
+                }
+            }
         }
     }
-    close(sock);
+    // close(sock);
     return 0;
 }

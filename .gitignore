@@ -1,3 +1,27 @@
 *.bin
 *.elf
 *.list
+# Minecraft runtime files
+minecraft-server/cache/
+minecraft-server/config/
+minecraft-server/libraries/
+minecraft-server/logs/
+minecraft-server/plugins/
+minecraft-server/versions/
+minecraft-server/world/
+minecraft-server/world_nether/
+minecraft-server/world_the_end/
+
+# JARs
+minecraft-server/*.jar
+
+# JSON runtime files
+minecraft-server/usercache.json
+minecraft-server/version_history.json
+minecraft-server/banned-players.json
+minecraft-server/banned-ips.json
+minecraft-server/ops.json
+minecraft-server/whitelist.json
+
+# Logs
+*.log

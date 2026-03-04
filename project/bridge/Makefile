@@ -11,7 +11,10 @@ bridge-minecraft: $(BRIDGE_MC_SRC)
 	$(CC) $(CFLAGS) $^ -o bridge-minecraft
 
 bridge-pi: $(BRIDGE_PI_SRC)
-	$(CC) $(CFLAGS) $^ -o bridge-pi
+	$(CC) $(CFLAGS) $^ -o bridge-pi \
+	-framework ApplicationServices \
+	-framework CoreFoundation \
+	-lpthread
 
 clean:
 	rm -f bridge-minecraft bridge-pi
