@@ -41,6 +41,12 @@ void move_player(int sock, int x, int y, int z) {
     send(sock, buf, strlen(buf), 0);
 }
 
+void send_player_rotation(int sock, int dx, int dy) {
+    char buf[128];
+    sprintf(buf, "player.setRot(%d,%d)\n", dx, dy);
+    send(sock, buf, strlen(buf), 0);
+}
+
 int setup_pi_connection(const char * device) {
     int fd = open(device, O_RDWR | O_NOCTTY);
     if (fd < 0) {
@@ -113,6 +119,12 @@ int main() {
                 if (strcmp(cmd, "PLAYER") == 0) {
                     move_player(sock, x, y, z);
                     printf("move player %d %d %d\n", x, y, z);
+                }
+            }
+            else if (sscanf(buffer, "%15s %d %d", cmd, &dx, &dy) == 3) {
+                if (strcmp(cmd, "PLAYER_ROT") == 0) {
+                    send_player_rotation(sock, dx, dy);
+                    printf("send player rotation %d %d\n", dx, dy);
                 }
             }
         }
