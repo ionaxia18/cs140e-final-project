@@ -3,14 +3,14 @@
 #include "pending.h"
 
 
-world_key_t world_make_key(world_pos_t p) {
+world_key_t world_make_key(pos_t p) {
     uint32_t mask = 0x3ff; 
     // mask to get rid of sign bit
     return ((p.x & mask) << 20) | ((p.y & mask) << 10) | (p.z & mask);
 }
 
-world_pos_t world_read_key(world_key_t k){
-    world_pos_t p; 
+pos_t world_read_key(world_key_t k){
+    pos_t p; 
     uint32_t mask = 0x3ff;
     uint32_t masked_z = k & mask;
     uint32_t masked_y = (k >> 10) & mask;
@@ -24,12 +24,12 @@ world_pos_t world_read_key(world_key_t k){
     return p;
 }
 
-bool world_pos_is_valid(world_pos_t p) {
+bool world_pos_is_valid(pos_t p) {
     return p.x >= -512 && p.x <= 511 && p.y >= -512 && p.y <= 511 && p.z >= -512 && p.z <= 511;
 }
 
 // to do: this should somehow link to how the fruitjuice server is being started up
-world_t* world_create(const world_info_t* info) {
+world_t* world_create(const world_info_t* info, player_t* player) {
     world_t* w = kmalloc(sizeof(world_t));
     if (!w) {
         return NULL;
@@ -51,7 +51,7 @@ world_t* world_create(const world_info_t* info) {
         return NULL;
     }
 
-    w->player_pos = (world_pos_t){0, 0, 0};
+    w->player = player;
     return w;
 }
 
@@ -59,13 +59,13 @@ void world_reset(world_t* w);
 
 
 // Check if two positions are equal
-bool block_pos_equal(world_pos_t p1, world_pos_t p2) {
+bool block_pos_equal(pos_t p1, pos_t p2) {
     return p1.x == p2.x && p1.y == p2.y && p1.z == p2.z;
 }
 
 
 // Get current block type at position p 
-block_t world_get_block(const world_t* w, world_pos_t p) {
+block_t world_get_block(const world_t* w, pos_t p) {
     if (!world_pos_is_valid(p)) {
         trace("Invalid position %d, %d, %d\n", p.x, p.y, p.z);
         return BLOCK_AIR;
@@ -81,7 +81,7 @@ block_t world_get_block(const world_t* w, world_pos_t p) {
 /* Add block info at position p to hash tables.
 Else, insert change into edits and pending tables
 Returns F if out of bounds or if tables are full */
-bool world_set_block(world_t* w, world_pos_t p, block_t new_block) {
+bool world_set_block(world_t* w, pos_t p, block_t new_block) {
     if (!world_pos_is_valid(p)) {
         trace("Invalid position %d, %d, %d\n", p.x, p.y, p.z);
         return false;

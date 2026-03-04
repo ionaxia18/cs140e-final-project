@@ -29,7 +29,7 @@ void fill_table(world_t* w, world_entry_t* expected_entries) {
     for (int x = w->info->min.x; x < w->info->max.x; x += 2) {
         for (int y = w->info->min.y; y < w->info->max.y; y += 2) {
             for (int z = w->info->min.z; z < w->info->max.z; z += 2) {
-                world_pos_t p = {x, y, z};
+                pos_t p = {x, y, z};
                 uint32_t index = table_empty_index(expected_entries, w->edits.cap, p);
                 bool is_step4 = (x - w->info->min.x) % 4 == 0
                                 && (y - w->info->min.y) % 4 == 0
@@ -49,7 +49,7 @@ void edit_world(world_t* w) {
     for (int x = w->info->min.x; x < w->info->max.x; x += 2) {
         for (int y = w->info->min.y; y < w->info->max.y; y += 2) {
             for (int z = w->info->min.z; z < w->info->max.z; z += 2) {
-                world_pos_t p = {x, y, z};
+                pos_t p = {x, y, z};
                 world_set_block(w, p, BLOCK_GRASS);
             }
         }
@@ -58,14 +58,14 @@ void edit_world(world_t* w) {
     for (int x = w->info->min.x; x < w->info->max.x; x += 4) {
         for (int y = w->info->min.y; y < w->info->max.y; y += 4) {
             for (int z = w->info->min.z; z < w->info->max.z; z += 4) {
-                world_pos_t p = {x, y, z};
+                pos_t p = {x, y, z};
                 world_set_block(w, p, BLOCK_DIRT);
             }
         }
     }
 }
 
-void create_world(uint32_t seed, world_pos_t min, world_pos_t max, uint32_t edits_cap, uint32_t pending_cap) {
+void create_world(uint32_t seed, pos_t min, pos_t max, uint32_t edits_cap, uint32_t pending_cap) {
     world_info_t info = {
         .seed = seed,
         .min = min,
@@ -74,7 +74,13 @@ void create_world(uint32_t seed, world_pos_t min, world_pos_t max, uint32_t edit
         .pending_cap = pending_cap,
     };
 
-    world_t* w = world_create(&info);
+    player_t player = {.player_id = 0,
+        .position = (pos_t) {0, 0, 0},
+        .rotation = (p_rot_t) {0, 0}
+    };
+
+    world_t* w = world_create(&info, &player);
+
 
     if (!w) {
         panic("Failed to create world");
@@ -92,11 +98,11 @@ void create_world(uint32_t seed, world_pos_t min, world_pos_t max, uint32_t edit
 
 void notmain(void) {
     //test different size worlds
-    create_world(0, (world_pos_t){0, 0, 0}, (world_pos_t){5, 5, 5}, 128, 128);
+    create_world(0, (pos_t){0, 0, 0}, (pos_t){5, 5, 5}, 128, 128);
     count = 0;
-    create_world(0, (world_pos_t){-5, -5, -5}, (world_pos_t){5, 5, 5}, 1024, 1024);
+    create_world(0, (pos_t){-5, -5, -5}, (pos_t){5, 5, 5}, 1024, 1024);
     count = 0;
-    create_world(0, (world_pos_t){-10, -10, -10}, (world_pos_t){10, 10, 10}, 8192, 8192);
+    create_world(0, (pos_t){-10, -10, -10}, (pos_t){10, 10, 10}, 8192, 8192);
     count = 0;
     
 

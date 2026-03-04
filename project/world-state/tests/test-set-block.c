@@ -9,7 +9,7 @@ void fill_table(world_t* w) {
     for (int x = w->info->min.x; x < w->info->max.x; x += 2) {
         for (int y = w->info->min.y; y < w->info->max.y; y += 2) {
             for (int z = w->info->min.z; z < w->info->max.z; z += 2) {
-                world_pos_t p = {x, y, z};
+                pos_t p = {x, y, z};
                 uint32_t index = table_empty_index(expected_entries, w->edits.cap, p);
                 expected_entries[index] = (world_entry_t){BLOCK_GRASS, p, true};
                 count++;
@@ -40,14 +40,20 @@ void notmain(void) {
     // create sample config for world
     world_info_t info = {
         .seed = 0,
-        .min = (world_pos_t){-20, -20, -20},
-        .max = (world_pos_t){0, 0, 0},
+        .min = (pos_t){-20, -20, -20},
+        .max = (pos_t){0, 0, 0},
         .edits_cap = 8192,
         .pending_cap = 8192,
     };
     trace("Size of world_entry_t: %d\n", sizeof(world_entry_t));
 
-    world_t* w = world_create(&info);
+    player_t player = {.player_id = 0,
+        .position = (pos_t) {0, 0, 0},
+        .rotation = (p_rot_t) {0, 0}
+    };
+
+    world_t* w = world_create(&info, &player);
+
 
 
     if (!w) {
@@ -59,7 +65,7 @@ void notmain(void) {
     for (int x = w->info->min.x; x < w->info->max.x; x += 2) {
         for (int y = w->info->min.y; y < w->info->max.y; y += 2) {
             for (int z = w->info->min.z; z < w->info->max.z; z += 2) {
-                world_pos_t p = {x, y, z};
+                pos_t p = {x, y, z};
                 world_set_block(w, p, BLOCK_GRASS);
             }
         }

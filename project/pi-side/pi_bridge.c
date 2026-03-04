@@ -5,7 +5,7 @@
 #include "../world-state/world-gen.h"
 #include "../world-state/pending.h"
 #include "../world-state/hashtable.h"
-
+#include "../world-state/player.h"
 #define BAUDRATE B115200
 
 struct coords p_coords = {235, 65, -1};
@@ -46,7 +46,7 @@ void uart_put_str(char* str) {
 
 // takes in a character move, will move the player on pi side and return new coordinates
 void do_move(world_t* w, char c) {
-    world_pos_t new_coord = w->player_pos;
+    pos_t new_coord = (pos_t)w->player->position;
     if (c == 'w') {
         new_coord.x += 1;
     } else if (c == 'a') {
@@ -61,7 +61,7 @@ void do_move(world_t* w, char c) {
         panic("invalid move to position %d %d %d", new_coord.x, new_coord.y, new_coord.z);
     } 
     
-    w->player_pos = new_coord;
+    w->player->position = (pos_t) new_coord;
     
     uart_put_str("PLAYER ");
     uart_put_int(new_coord.x);
@@ -73,6 +73,7 @@ void do_move(world_t* w, char c) {
  }
 
 void change_block(char c) {
+    // this depends on how we update the player rotation ?
     char * cur_block = "";
     if (c == 'p') {
         cur_block = block;
@@ -93,21 +94,34 @@ void change_block(char c) {
     }
     uart_put8('\n');
 }
-
+ 
+void update_rotation(world_t* w, uint16_t dx, uint16_t dy) {
+    player_t* player = w->player;
+    // idk how to scale the rotation
+    uart_put_str("ROTATION ");
+    uart_put_int(dx);
+    uart_put_str(" ");
+    uart_put_int(dy);
+    uart_put_str("\n");
+}
 
 
 void notmain() {
     // initialize world seed
     world_info_t info = {
         .seed = 1,
-        .min = (world_pos_t){0, -60, 0},
-        .max = (world_pos_t){16, -44, 16},
+        .min = (pos_t){0, -60, 0},
+        .max = (pos_t){16, -44, 16},
         .edits_cap = 4096,
         .pending_cap = 4096,
     };
 
-    world_t* w = world_create(&info);
+    player_t player = {.player_id = 0,
+        .position = (pos_t) {0, 0, 0},
+        .rotation = (p_rot_t) {0, 0}
+    };
 
+    world_t* w = world_create(&info, &player);
 
     if (!w) {
         panic("Failed to create world");
@@ -124,8 +138,13 @@ void notmain() {
             }
             else if (c == 'p' || c == 'r') {
                 change_block(c);
-            } 
-            else if (c == 'q') {
+            } else if (c == 'm') {
+                while (!uart_has_data()) {}
+                uint32_t dx = uart_get8();
+                while (!uart_has_data()) {}
+                uint32_t dy = uart_get8();
+                update_rotation(w, dx, dy);
+            } else if (c == 'q') {
                 uart_flush_tx();
                 return;
             }

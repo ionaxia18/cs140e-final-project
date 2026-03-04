@@ -14,7 +14,7 @@ void fill_table(world_t* w) {
 
     for (int x = w->info->min.x; x < w->info->max.x; x++) {
         for (int z = w->info->min.z; z < w->info->max.z; z++) {
-            world_pos_t p = {x, -60, z};
+            pos_t p = {x, -60, z};
             uint32_t index = table_hash_index(p, w->edits.cap);
             trace("Index for pos %d, %d, %d is %d\n", x, -60, z, index);
             w->edits.entries[index] = entry;
@@ -30,13 +30,19 @@ void notmain(void) {
     // create sample config for world
     world_info_t info = {
         .seed = 0,
-        .min = (world_pos_t){-65, -65, -65},
-        .max = (world_pos_t){-58, -58, -58},
+        .min = (pos_t){-65, -65, -65},
+        .max = (pos_t){-58, -58, -58},
         .edits_cap = 256,
         .pending_cap = 256,
     };
+    
+    player_t player = {.player_id = 0,
+        .position = (pos_t) {0, 0, 0},
+        .rotation = (p_rot_t) {0, 0}
+    };
 
-    world_t* w = world_create(&info);
+    world_t* w = world_create(&info, &player);
+
 
 
     if (!w) {
@@ -50,7 +56,7 @@ void notmain(void) {
     for (int x = w->info->min.x; x < w->info->max.x; x++) {
         for (int y = w->info->min.y; y < w->info->max.y; y++) {
             for (int z = w->info->min.z; z < w->info->max.z; z++) {
-                world_pos_t p = {x, y, z};
+                pos_t p = {x, y, z};
                 uint32_t index = table_hash_index(p, w->edits.cap);
                 if (y != -60) {
                     assert(table_get_entry(&w->edits, p) == NULL);
