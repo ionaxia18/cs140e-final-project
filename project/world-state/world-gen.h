@@ -1,5 +1,6 @@
 #include "rpi.h"
 #include "world.h"
+#include "hashtable.h"
 
 
 block_t world_base_block(const world_t* w, world_pos_t p);

@@ -3,6 +3,7 @@
 
 #include <stdint.h>
 #include <stdbool.h>
+#include "rpi.h"
 
 typedef uint8_t block_t;
 
@@ -21,18 +22,6 @@ typedef struct {
 } world_pos_t;
 
 typedef struct {
-    uint32_t seed;
-
-    // Testing purposes: restrict size of world
-    world_pos_t min;
-    world_pos_t max;
-
-    // Hash table capacities (for kmalloc), must be powers of 2
-    uint32_t edits_cap;
-    uint32_t pending_cap;
-} world_info_t;
-
-typedef struct {
     block_t block;
     world_pos_t pos;
     bool full;
@@ -44,10 +33,29 @@ typedef struct {
     uint32_t size;
 } world_table_t;
 
+typedef struct {
+    world_entry_t* entries;
+    uint32_t cap;
+    uint32_t size;
+    uint32_t* indices;
+} pending_table_t;
+
+typedef struct {
+    uint32_t seed;
+
+    // Testing purposes: restrict size of world
+    world_pos_t min;
+    world_pos_t max;
+
+    // Hash table capacities (for kmalloc), must be powers of 2
+    uint32_t edits_cap; // 64000
+    uint32_t pending_cap; // 1024
+} world_info_t;
+
 struct world {
     const world_info_t* info;
     world_table_t edits;
-    world_table_t pending;
+    pending_table_t pending;
 };
 
 typedef uint32_t world_key_t;
@@ -76,17 +84,6 @@ void world_reset(world_t* w);
 // Check if two positions are equal
 bool block_pos_equal(world_pos_t p1, world_pos_t p2);
 
-// Run hash function to get hash index in edits table
-uint32_t block_hash_index(const world_t* w, world_pos_t p, uint32_t cap);
-
-// Helper to get next open index in table with or without collision. Returns -1 if table is full.
-uint32_t get_next_index(world_entry_t* entries, uint32_t cap, uint32_t key);
-
-// Lookup entry in edits table: returns ptr to entry if found, null if not found
-world_entry_t* world_get_entry(const world_t* w, world_pos_t p);
-
-// Insert entry into edits table: returns T if successful, F if failed
-bool world_set_entry(world_t* w, block_t block, world_pos_t p);
 
 // Get current block info at position p 
 block_t world_get_block(const world_t* w, world_pos_t p);
