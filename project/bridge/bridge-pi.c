@@ -5,9 +5,14 @@
 #include <stdlib.h>
 #include <fcntl.h>
 #include <string.h>
+#include <pthread.h>
+#include <ApplicationServices/ApplicationServices.h>
 
 #define SERIAL_PORT "/dev/cu.SLAB_USBtoUART"
+#define SEND_INTERVAL 0.03
 #define BAUDRATE B115200
+
+int fd;
 
 struct termios old_t;
 
@@ -26,8 +31,51 @@ void enable_raw_keyboard_mode() {
     printf("raw keyboard mode enabled\n");
 }
 
+CGEventRef trackpad_event_handler(CGEventTapProxy proxy, CGEventType type, CGEventRef event, void *refcon) {
+    static int accum_dx = 0;
+    static int accum_dy = 0;
+    static struct timespec last_send = {0,0};
+
+    if (type != kCGEventScrollWheel) {
+        return event;
+    }
+    int dx = (int)CGEventGetDoubleValueField(event, kCGScrollWheelEventDeltaAxis1);
+    int dy = (int)CGEventGetDoubleValueField(event, kCGScrollWheelEventDeltaAxis2);  
+    accum_dx += dx;
+    accum_dy += dy;
+    struct timespec now;
+    clock_gettime(CLOCK_MONOTONIC, &now);
+    if (now.tv_sec - last_send.tv_sec + (now.tv_nsec - last_send.tv_nsec) / 1000000000.0 > SEND_INTERVAL) {
+        char buffer[32];
+        int len = snprintf(buffer, sizeof(buffer), "m %d %d\n", accum_dx, accum_dy);
+        printf("sending mouse move %d %d\n", accum_dx, accum_dy);
+        write(fd, buffer, len);\
+        accum_dx = 0;
+        accum_dy = 0;
+        last_send = now;
+    }
+    return event;
+}
+
+void *trackpad_loop_thread(void *arg) {
+    CGEventMask want_event = CGEventMaskBit(kCGEventScrollWheel);
+    CFMachPortRef tap = CGEventTapCreate(kCGSessionEventTap, kCGHeadInsertEventTap, 0, want_event, trackpad_event_handler, NULL);
+
+    if (tap == NULL) {
+        printf("failed to create event tap\n");
+        return NULL;
+    }
+    CFRunLoopSourceRef source = CFMachPortCreateRunLoopSource(kCFAllocatorDefault, tap, 0);
+    CFRunLoopAddSource(CFRunLoopGetCurrent(), source, kCFRunLoopDefaultMode);
+    printf("event tap created and added to run loop\n");
+    CFRunLoopRun();
+    printf("run loop exited\n");
+    return NULL;
+}
+
 int main() {
-    int fd = open(SERIAL_PORT, O_RDWR | O_NOCTTY);
+    printf("starting bridge-pi\n");
+    fd = open(SERIAL_PORT, O_RDWR | O_NOCTTY);
     if (fd < 0) {
         return 1;
     }
@@ -43,7 +91,10 @@ int main() {
     tty.c_cflag &= ~CSTOPB;
     tcsetattr(fd, TCSANOW, &tty);
     enable_raw_keyboard_mode();
-    printf("press WASD to move, P to place block, R to remove block and Q to quit\n");
+    printf("press WASD to move, P to place block, R to remove block, and Q to quit. Use trackpad scroll to move the camera.\n");
+
+    pthread_t trackpad_thread;
+    pthread_create(&trackpad_thread, NULL, trackpad_loop_thread, NULL);
 
     while (1) {
         char c;
@@ -56,6 +107,7 @@ int main() {
         else if (c == 'q') {
             write(fd, &c, 1);
             printf("quitting the program\n");
+            pthread_cancel(trackpad_thread);
             break;
         }
     }
