@@ -1,0 +1,65 @@
+#include "rpi.h"
+#include "world.h"
+
+bool test_indices[8][8][8];
+bool expected_indices[8][8][8];
+
+// fill in table with all grass positions 
+void fill_table(world_t* w) {
+    world_entry_t entry;
+    entry.block = BLOCK_GRASS;
+    entry.full = true;
+
+    for (int x = w->info->min.x; x < w->info->max.x; x++) {
+        for (int z = w->info->min.z; z < w->info->max.z; z++) {
+            world_pos_t p = {x, -60, z};
+            uint32_t index = block_hash_index(w, p, w->edits.cap);
+            trace("Index for pos %d, %d, %d is %d\n", x, -60, z, index);
+            w->edits.entries[index] = entry;
+            w->edits.entries[index].pos = p;
+       
+            expected_indices[x + 65][-60 + 65][z + 65] = true;
+            w->edits.size++;
+        }
+    }
+}   
+
+void notmain(void) {
+    // create sample config for world
+    world_info_t info = {
+        .seed = 0,
+        .min = (world_pos_t){-65, -65, -65},
+        .max = (world_pos_t){-58, -58, -58},
+        .edits_cap = 256,
+        .pending_cap = 256,
+    };
+
+    world_t* w = world_create(&info);
+
+
+    if (!w) {
+        panic("Failed to create world");
+    }
+
+    fill_table(w);
+
+    world_entry_t entry;
+
+    for (int x = w->info->min.x; x < w->info->max.x; x++) {
+        for (int y = w->info->min.y; y < w->info->max.y; y++) {
+            for (int z = w->info->min.z; z < w->info->max.z; z++) {
+                world_pos_t p = {x, y, z};
+                uint32_t index = block_hash_index(w, p, w->edits.cap);
+                if (y != -60) {
+                    assert(world_get_entry(w, p) == NULL);
+                } else {
+                    assert(world_get_entry(w, p) != NULL && world_get_entry(w, p)->block == BLOCK_GRASS);
+                    test_indices[x + 65][y + 65][z + 65] = true;
+                }
+            }
+           
+        }
+    }
+    assert(memcmp(test_indices, expected_indices, sizeof(test_indices)) == 0);
+    trace("Comparison test passed\n");
+}
