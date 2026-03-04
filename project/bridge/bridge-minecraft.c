@@ -101,7 +101,7 @@ int main() {
         if (n <= 0) {
             continue;
         }
-        if (c == '\n') {
+        if (c == '\n' || c == '\r') {
 
             if (buf_idx > 0 && buffer[buf_idx - 1] == '\r') {
                 buf_idx--;
@@ -111,7 +111,7 @@ int main() {
             buf_idx = 0;
 
             char cmd[16];
-            int x, y, z;
+            int x, y, z, dx, dy;
             char block[64];
 
             printf("%s\n", buffer);
