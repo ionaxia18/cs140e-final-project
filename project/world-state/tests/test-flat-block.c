@@ -1,6 +1,7 @@
 #include "rpi.h"
 #include "world.h"
 #include "world-gen.h"
+#include "hashtable.h"
 
 
 void get_block_info(world_t* w, world_pos_t p) {
@@ -43,5 +44,6 @@ void notmain(void) {
             }
         }
     }
+    trace("Flat block test passed\n");
 
 }
