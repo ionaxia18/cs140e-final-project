@@ -9,7 +9,7 @@
 
 #define PLUGIN_IP "127.0.0.1"
 #define PLUGIN_PORT 4711
-#define PI_PORT "/dev/cu.SLAB_USBtoUART"
+#define PI_PORT "/dev/cu.usbserial-110"
 #define BAUDRATE    B115200
 
 // setup tcp function so that it can be used to talk to fruitjuice plugin
@@ -77,9 +77,9 @@ int main() {
     }
     printf("sock created\n");
 
-    fruit_juice_test(sock);
+    // fruit_juice_test(sock);
     // close(sock);
-    return 0;
+    // return 0;
 
 
     int pi_fd = setup_pi_connection(PI_PORT);
@@ -100,15 +100,21 @@ int main() {
         if (n <= 0) {
             continue;
         }
-
         if (c == '\n') {
+
+            if (buf_idx > 0 && buffer[buf_idx - 1] == '\r') {
+                buf_idx--;
+            }
+
             buffer[buf_idx] = '\0';
             buf_idx = 0;
 
             char cmd[16];
             int x, y, z;
             char block[64];
-        
+
+            printf("%s\n", buffer);
+
             if (sscanf(buffer, "%15s %d %d %d %63s", cmd, &x, &y, &z, block) == 5) {
                 if (strcmp(cmd, "BLOCK") == 0) {
                     put_block(sock, x, y, z, block);
@@ -125,6 +131,16 @@ int main() {
                 if (strcmp(cmd, "PLAYER_ROT") == 0) {
                     send_player_rotation(sock, dx, dy);
                     printf("send player rotation %d %d\n", dx, dy);
+                }
+            }
+
+        } else {
+            if (buf_idx < sizeof(buffer) - 1) {
+                if (!(c == ' ' || c == '-' || (c >= '0' && c <= '9') ||
+                    (c >= 'A' && c <= 'Z') || (c >= 'a' && c <= 'z'))) {
+                    buffer[buf_idx++] = ' ';   // turn weird separators into spaces
+                } else {
+                buffer[buf_idx++] = c;
                 }
             }
         }
