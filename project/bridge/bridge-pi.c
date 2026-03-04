@@ -7,8 +7,8 @@
 #include <string.h>
 #include <pthread.h>
 #include <ApplicationServices/ApplicationServices.h>
+#include "../constants.h"
 
-#define SERIAL_PORT "/dev/cu.SLAB_USBtoUART"
 #define SEND_INTERVAL 0.03
 #define BAUDRATE B115200
 
@@ -75,7 +75,7 @@ void *trackpad_loop_thread(void *arg) {
 
 int main() {
     printf("starting bridge-pi\n");
-    fd = open(SERIAL_PORT, O_RDWR | O_NOCTTY);
+    fd = open(PI_PORT, O_RDWR | O_NOCTTY);
     if (fd < 0) {
         return 1;
     }

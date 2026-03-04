@@ -1,68 +1,85 @@
 #include "pi_bridge.h"
 #include "../../libpi/rpi.h"
-
-#define SERIAL_PORT "/dev/cu.SLAB_USBtoUART"
+#include "../constants.h"
+#include "../world-state/world.h"
+#include "../world-state/world-gen.h"
+#include "../world-state/pending.h"
+#include "../world-state/hashtable.h"
+#include "../world-state/player.h"
 #define BAUDRATE B115200
 
-struct coords p_coords = {0, 0, 0};
-char * block = "stone";
+struct coords p_coords = {235, 65, -1};
+char * block = "STONE";
 
 void uart_put_int(int val) {
-    char buf[11];
-    int i = 10;
-    buf[i] = '\0';
-    i -= 1;
+    char buf[12];              // enough for -2147483648 + '\0'
+    int i = 0;
+
+    if (val == 0) {
+        uart_put8('0');
+        return;
+    }
 
     if (val < 0) {
         uart_put8('-');
+        // avoid overflow on INT_MIN if you care:
+        // unsigned u = (unsigned)(-(val+1)) + 1;
         val = -val;
     }
 
-    if (val == 0) buf[i] = '0';
-    i -= 1;
     while (val > 0) {
-        buf[i] = '0' + (val % 10);
-        i -= 1;
+        buf[i++] = '0' + (val % 10);
         val /= 10;
     }
-    i++;
-    for (; buf[i] != '\0'; i++) {
+
+    while (i--) {
         uart_put8(buf[i]);
     }
 }
 
+
+void uart_put_str(char* str) {
+    for (int i = 0; str[i] != '\0'; i++) {
+        uart_put8(str[i]);
+    }
+}
+
 // takes in a character move, will move the player on pi side and return new coordinates
-void do_move(char c) {
+void do_move(world_t* w, char c) {
+    pos_t new_coord = (pos_t)w->player->position;
     if (c == 'w') {
-        p_coords.x += 1;
+        new_coord.x += 1;
     } else if (c == 'a') {
-        p_coords.y -= 1;
+        new_coord.y -= 1;
     } else if (c == 's') {
-        p_coords.x += 1;
+        new_coord.x += 1;
     } else if (c == 'd') {
-        p_coords.y -= 1;
+        new_coord.y -= 1;
     }
 
-    const char *str = "PLAYER";
-    for (size_t i = 0; str[i] != '\0'; i++) {
-        uart_put8((uint8_t) str[i]);
-    }
-    uart_put8(' ');
-    uart_put_int(p_coords.x);
-    uart_put8(' ');
-    uart_put_int(p_coords.y);
-    uart_put8(' ');
-    uart_put_int(p_coords.z);
-    uart_put8('\n');
+    if (!world_pos_is_valid(new_coord)) {
+        panic("invalid move to position %d %d %d", new_coord.x, new_coord.y, new_coord.z);
+    } 
+    
+    w->player->position = (pos_t) new_coord;
+    
+    uart_put_str("PLAYER ");
+    uart_put_int(new_coord.x);
+    uart_put_str(" ");
+    uart_put_int(new_coord.y);
+    uart_put_str(" ");
+    uart_put_int(new_coord.z);
+    uart_put_str("\n");
  }
 
 void change_block(char c) {
+    // this depends on how we update the player rotation ?
     char * cur_block = "";
     if (c == 'p') {
         cur_block = block;
     }
     else if (c == 'r') {
-        cur_block = "air";
+        cur_block = "AIR";
     }
     const char *str = "BLOCK";
     for (size_t i = 0; str[i] != '\0'; i++) {
@@ -70,34 +87,68 @@ void change_block(char c) {
     }
     uart_put8(' ');
     uart_put_int(p_coords.x);
-    uart_put8(' ');
     uart_put_int(p_coords.y);
-    uart_put8(' ');
     uart_put_int(p_coords.z);
-    uart_put8(' ');
     for (size_t i = 0; cur_block[i] != '\0'; i++) {
         uart_put8((uint8_t) cur_block[i]);
     }
     uart_put8('\n');
 }
-
+ 
+void update_rotation(world_t* w, uint16_t dx, uint16_t dy) {
+    player_t* player = w->player;
+    // idk how to scale the rotation
+    uart_put_str("ROTATION ");
+    uart_put_int(dx);
+    uart_put_str(" ");
+    uart_put_int(dy);
+    uart_put_str("\n");
+}
 
 
 void notmain() {
+    // initialize world seed
+    world_info_t info = {
+        .seed = 1,
+        .min = (pos_t){0, -60, 0},
+        .max = (pos_t){16, -44, 16},
+        .edits_cap = 4096,
+        .pending_cap = 4096,
+    };
+
+    player_t player = {.player_id = 0,
+        .position = (pos_t) {0, 0, 0},
+        .rotation = (p_rot_t) {0, 0}
+    };
+
+    world_t* w = world_create(&info, &player);
+
+    if (!w) {
+        panic("Failed to create world");
+    }
+
+    // begin pulling from uart to update world
     uart_init();
+    trace("Comparison test passed\n");
     while (1) {
         if (uart_has_data()) {
             char c = (char) uart_get8();
             if (c == 'w' || c == 'a' || c == 's' || c == 'd') {
-                do_move(c);
+                do_move(w, c);
             }
             else if (c == 'p' || c == 'r') {
                 change_block(c);
-            } 
-            else if (c == 'q') {
+            } else if (c == 'm') {
+                while (!uart_has_data()) {}
+                uint32_t dx = uart_get8();
+                while (!uart_has_data()) {}
+                uint32_t dy = uart_get8();
+                update_rotation(w, dx, dy);
+            } else if (c == 'q') {
                 uart_flush_tx();
                 return;
             }
         }
     }
+    uart_flush_tx();
 }

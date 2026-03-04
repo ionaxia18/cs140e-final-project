@@ -12,7 +12,7 @@ static uint32_t hash2d(uint32_t seed, int16_t x, int16_t z) {
 }
 
 // Query block in flat world with mountains
-block_t make_flat_with_mtns(uint32_t seed, world_pos_t p) {
+block_t make_flat_with_mtns(uint32_t seed, pos_t p) {
     int base_height = -60;
     // hash gives 0-15, make a mountain if hash < 2 
     uint32_t h = hash2d(seed, p.x, p.z);
@@ -30,7 +30,7 @@ block_t make_flat_with_mtns(uint32_t seed, world_pos_t p) {
 
 // Query block in flat world
 // Seed = 0
-block_t flat_world(world_pos_t p) {
+block_t flat_world(pos_t p) {
     int16_t y = p.y;
     if (y == -60) {
         return BLOCK_GRASS;
@@ -43,7 +43,7 @@ block_t flat_world(world_pos_t p) {
     }
 }
 
-block_t world_base_block(const world_t* w, world_pos_t p) {
+block_t world_base_block(const world_t* w, pos_t p) {
     const world_info_t* info = w->info;
     if (info->seed == 0) {
         return flat_world(p);
