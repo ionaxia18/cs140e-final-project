@@ -8,8 +8,8 @@
 #include "../world-state/player.h"
 #define BAUDRATE B115200
 
-struct coords p_coords = {235, 65, -1};
-char * block = "STONE";
+// struct coords p_coords = {235, 65, -1};
+// char * block = "STONE";
 
 void uart_put_int(int val) {
     char buf[12];              // enough for -2147483648 + '\0'
@@ -45,91 +45,94 @@ void uart_put_str(char* str) {
 }
 
 // takes in a character move, will move the player on pi side and return new coordinates
-void do_move(world_t* w, char c) {
-    pos_t new_coord = (pos_t)w->player->position;
+void do_move(world_t* w, char c, player_t* player) {
     if (c == 'w') {
-        new_coord.x += 1;
+        player_position_increment(player, 0, 1, 0);
     } else if (c == 'a') {
-        new_coord.y -= 1;
+        player_position_increment(player, -1, 0, 0);
     } else if (c == 's') {
-        new_coord.x += 1;
+        player_position_increment(player, 0, -1, 0);
     } else if (c == 'd') {
-        new_coord.y -= 1;
+        player_position_increment(player, 1, 0, 0);
     }
 
-    if (!world_pos_is_valid(new_coord)) {
-        panic("invalid move to position %d %d %d", new_coord.x, new_coord.y, new_coord.z);
+    if (!world_pos_is_valid(player->position)) {
+        panic("invalid move to position %d %d %d", player->position.x, player->position.y, player->position.z);
     } 
     
-    w->player->position = (pos_t) new_coord;
-    
     uart_put_str("PLAYER ");
-    uart_put_int(new_coord.x);
+    uart_put_int(player->position.x);
     uart_put_str(" ");
-    uart_put_int(new_coord.y);
+    uart_put_int(player->position.y);
     uart_put_str(" ");
-    uart_put_int(new_coord.z);
+    uart_put_int(player->position.z);
     uart_put_str("\n");
  }
 
-void change_block(char c) {
+void change_block(char c, block_t block, pos_t pos) {
     // this depends on how we update the player rotation ?
     char * cur_block = "";
     if (c == 'p') {
         cur_block = block;
+        world_set_block(w, pos, block);
     }
     else if (c == 'r') {
         cur_block = "AIR";
+        world_set_block(w, pos, BLOCK_AIR);
     }
     const char *str = "BLOCK";
     for (size_t i = 0; str[i] != '\0'; i++) {
         uart_put8((uint8_t) str[i]);
     }
     uart_put8(' ');
-    uart_put_int(p_coords.x);
-    uart_put_int(p_coords.y);
-    uart_put_int(p_coords.z);
+    uart_put_int(pos.x);
+    uart_put_int(pos.y);
+    uart_put_int(pos.z);
     for (size_t i = 0; cur_block[i] != '\0'; i++) {
         uart_put8((uint8_t) cur_block[i]);
     }
     uart_put8('\n');
 }
  
-void update_rotation(world_t* w, uint16_t dx, uint16_t dy) {
+void update_rotation(world_t* w, uint16_t yaw, uint16_t pitch) {
     player_t* player = w->player;
+    player_rotation_increment(player, yaw, pitch);
     // idk how to scale the rotation
     uart_put_str("ROT ");
-    uart_put_int(dx);
+    uart_put_int(yaw);
     uart_put_str(" ");
-    uart_put_int(dy);
+    uart_put_int(pitch);
     uart_put_str("\n");
 }
 
-
-void notmain() {
+void initialize_server() {
     // initialize world seed
     world_info_t info = {
-        .seed = 1,
+        .seed = 0,
         .min = (pos_t){0, -60, 0},
         .max = (pos_t){16, -44, 16},
         .edits_cap = 4096,
         .pending_cap = 4096,
     };
 
+    world_t* w = world_create(&info, &player);
+    if (!w) {
+        panic("Failed to create world");
+    }
+    return w;
+}
+
+void notmain() {
     player_t player = {.player_id = 0,
         .position = (pos_t) {0, 0, 0},
         .rotation = (p_rot_t) {0, 0}
     };
 
-    world_t* w = world_create(&info, &player);
-
-    if (!w) {
-        panic("Failed to create world");
-    }
+    world_t* w = initialize_server();
 
     // begin pulling from uart to update world
     uart_init();
-    trace("Comparison test passed\n");
+    trace("Server initialized\n");
     while (1) {
         if (uart_has_data()) {
             char c = (char) uart_get8();
