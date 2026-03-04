@@ -1,6 +1,6 @@
 #include "pi_bridge.h"
 #include "../../libpi/rpi.h"
-#include "constants.h"
+#include "../constants.h"
 
 #define BAUDRATE B115200
 
