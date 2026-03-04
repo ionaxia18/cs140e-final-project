@@ -1,12 +1,13 @@
-# PROG_SRC := $(wildcard *.c)
-PROG_SRC += test-mtn-gen.c
+#PROG_SRC := $(wildcard *.c)
+PROG_SRC += test-hashing.c
+# PROG_SRC += test-mtn-gen.c
 
 DIRS := ../tests
 
 PROGS := $(PROG_SRC:.c=.bin)
 
 LIBPI     := ../../../libpi
-WORLD_SRC := ../world.c ../world-gen.c
+WORLD_SRC := ../world.c ../world-gen.c ../../heap/allocator.c
 
 MEMMAP := $(LIBPI)/memmap
 START  := $(LIBPI)/staff-start.o

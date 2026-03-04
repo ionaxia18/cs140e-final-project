@@ -43,5 +43,6 @@ void notmain(void) {
             }
         }
     }
+    trace("Flat block test passed\n");
 
 }

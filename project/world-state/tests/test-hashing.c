@@ -6,20 +6,11 @@ bool expected_indices[8][8][8];
 
 // fill in table with all grass positions 
 void fill_table(world_t* w) {
-    world_entry_t entry;
-    entry.block = BLOCK_GRASS;
-    entry.full = true;
 
     for (int x = w->info->min.x; x < w->info->max.x; x++) {
         for (int z = w->info->min.z; z < w->info->max.z; z++) {
             world_pos_t p = {x, -60, z};
-            uint32_t index = block_hash_index(w, p, w->edits.cap);
-            trace("Index for pos %d, %d, %d is %d\n", x, -60, z, index);
-            w->edits.entries[index] = entry;
-            w->edits.entries[index].pos = p;
-       
-            expected_indices[x + 65][-60 + 65][z + 65] = true;
-            w->edits.size++;
+            assert(world_set_entry(w, BLOCK_GRASS, p));
         }
     }
 }   
@@ -49,11 +40,11 @@ void notmain(void) {
         for (int y = w->info->min.y; y < w->info->max.y; y++) {
             for (int z = w->info->min.z; z < w->info->max.z; z++) {
                 world_pos_t p = {x, y, z};
-                uint32_t index = block_hash_index(w, p, w->edits.cap);
+                world_entry_t* entry = world_get_entry(w, p);
                 if (y != -60) {
-                    assert(world_get_entry(w, p) == NULL);
+                    assert(entry == NULL);
                 } else {
-                    assert(world_get_entry(w, p) != NULL && world_get_entry(w, p)->block == BLOCK_GRASS);
+                    assert(entry != NULL && entry->block == BLOCK_GRASS);
                     test_indices[x + 65][y + 65][z + 65] = true;
                 }
             }
