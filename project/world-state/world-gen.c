@@ -18,14 +18,14 @@ block_t make_flat_with_mtns(uint32_t seed, world_pos_t p) {
     uint32_t h = hash2d(seed, p.x, p.z);
     int mtn_height = (h & 0xF) < 2 ? (int)((h >> 4) & 0x7) : 0;
 
+    if (mtn_height == 0)
+        return flat_world(p);
+
     int top = base_height + mtn_height;
-
-    if (p.y > top)       return BLOCK_AIR;
-    if (p.y == top)      return mtn_height > 0 ? BLOCK_STONE : BLOCK_GRASS;
-    if (p.y > top - 3)   return BLOCK_DIRT;
-    if (p.y > top - 5)   return BLOCK_BEDROCK;
-
-    return BLOCK_AIR;
+    if (p.y > top)         return BLOCK_AIR;
+    if (p.y == top)        return BLOCK_STONE;
+    if (p.y > base_height) return BLOCK_STONE;
+    return flat_world(p);
 }
 
 // Query block in flat world
@@ -48,6 +48,7 @@ block_t world_base_block(const world_t* w, world_pos_t p) {
     if (info->seed == 0) {
         return flat_world(p);
     } else {
+   
         return make_flat_with_mtns(info ->seed, p);
     }
 }
