@@ -17,6 +17,9 @@ struct player {
     p_rot_t rotation;
 };
 
+float sin_deg(float deg);
+float cos_deg(float deg);
+
 typedef struct player player_t;
 
 bool player_position_set(player_t* p, int16_t x, int16_t y, int16_t z);

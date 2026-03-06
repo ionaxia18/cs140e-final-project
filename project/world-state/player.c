@@ -1,5 +1,6 @@
 #include "player.h"
 #include "world.h"
+#include "../pi-side/uart-helpers.h"
 
 float sin_deg(float deg) {
     float x = deg * 3.14159265 / 180.0f;
@@ -11,7 +12,6 @@ float sin_deg(float deg) {
 float cos_deg(float deg) {
     return sin_deg(deg + 90.0f);
 }
-
 
 bool player_position_set(player_t* p, int16_t x, int16_t y, int16_t z) {
     pos_t new_pos = (pos_t){x, y, z};

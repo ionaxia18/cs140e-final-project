@@ -21,6 +21,9 @@ CFLAGS += -I$(LIBPI)/include -I$(LIBPI)/libc -I.. -I../world-state -I../heap
 WORLD_SRCS := $(wildcard ../world-state/*.c)
 WORLD_OBJS := $(patsubst ../world-state/%.c,objs/world-state/%.o,$(WORLD_SRCS))
 
+UART_SRCS := uart-helpers.c
+UART_OBS  := objs/uart-helpers.o
+
 # main program object
 PROG_OBJ := objs/$(PROG).o
 
@@ -43,8 +46,11 @@ objs/world-state/%.o: ../world-state/%.c | objs
 $(ALLOC_OBJ): $(ALLOC_SRC) | objs
 	$(CC) $(CFLAGS) -c $< -o $@
 
+$(UART_OBS): $(UART_SRCS) | objs
+	$(CC) $(CFLAGS) -c $< -o $@
+
 # link everything
-$(PROG).elf: $(PROG_OBJ) $(WORLD_OBJS) $(ALLOC_OBJ) $(START) $(LPI) $(MEMMAP)
+$(PROG).elf: $(PROG_OBJ) $(WORLD_OBJS) $(ALLOC_OBJ) $(START) $(LPI) $(MEMMAP) $(UART_OBS)
 	$(CC) $(CFLAGS) $(START) $(PROG_OBJ) $(WORLD_OBJS) $(ALLOC_OBJ) -T $(MEMMAP) $(LPI) -lgcc -o $@
 
 # convert to .bin and dump

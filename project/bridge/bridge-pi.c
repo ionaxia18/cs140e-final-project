@@ -78,12 +78,13 @@ void enable_raw_keyboard_mode() {
 
 int main() {
     printf("starting bridge-pi\n");
+    printf("trying to open %s\n", PI_PORT);
     fd = open(PI_PORT, O_RDWR | O_NOCTTY);
     if (fd < 0) {
-        printf("open failed: %s\n", strerror(errno));
+        printf("open(%s) failed: errno=%d (%s)\n", PI_PORT, errno, strerror(errno));
         return 1;
     }
-    printf("port %s opened\n", PI_PORT);
+    printf("opened %s with fd=%d\n", PI_PORT, fd);
     
     struct termios tty;
     tcgetattr(fd, &tty);

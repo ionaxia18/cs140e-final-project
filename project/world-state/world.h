@@ -17,6 +17,7 @@ enum {
     BLOCK_WATER = 8
 };
 
+// might want to move out of world.h
 typedef struct {
     int16_t x;
     int16_t y;
