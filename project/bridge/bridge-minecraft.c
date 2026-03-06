@@ -40,7 +40,7 @@ void move_player(int sock, int x, int y, int z) {
     char buf[128];
     sprintf(buf, "player.setTile(%d,%d,%d)\n", x, y, z);
     send(sock, buf, strlen(buf), 0);
-}           \`````
+}
 
 void send_player_rotation(int sock, int dx, int dy) {
     char buf[128];
