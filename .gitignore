@@ -3,7 +3,7 @@
 *.bin
 *.elf
 *.list
-*.a 
+*.o
 # Minecraft runtime files
 minecraft-server/cache/
 minecraft-server/config/
