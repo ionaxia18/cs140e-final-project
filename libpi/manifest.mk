@@ -35,6 +35,8 @@ ifndef CS140_ACT_AS_STUDENT
 endif
 endif
 
+STAFF_OBJS += staff-objs/staff-hw-spi.o
+
 DEPS += ./src
 
 # we need these first so that the catchall .o rule in Makefile.robust

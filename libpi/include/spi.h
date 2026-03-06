@@ -4,8 +4,10 @@
 // add spi1, spi2.
 
 // pass either of these for chip select.
-#define SPI_CE0 1111
-#define SPI_CE1 2222
+#define SPI_CE0 0
+#define SPI_CE1 1
+
+#include <stdint.h>
 
 // clock divider should be a power of two less than 2^15
 void spi_init(unsigned chip_select, unsigned clock_divider);

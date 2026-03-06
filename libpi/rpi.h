@@ -202,7 +202,7 @@ void memcpy256(void *dst, const void *src, size_t nbytes);
 
 /* #include <string.h> */
 
-#   include "../libunix/demand.h"
+#   include "demand.h"
 #ifndef RPI_UNIX
 #   define asm_align(x)    asm volatile (".align " _XSTRING(x))
 
