@@ -99,7 +99,6 @@ block_t world_get_block(const world_t* w, pos_t p) {
         return world_base_block(w, p);
     }
 }
-
 /* Add block info at position p to hash tables.
 Else, insert change into edits and pending tables
 Returns F if out of bounds or if tables are full */

@@ -1,11 +1,11 @@
-#include "pi_bridge.h"
+// #include "pi_bridge.h"
 #include "../../libpi/rpi.h"
 #include "../constants.h"
-#include "../world-state/world.h"
+// #include "../world-state/world.h"
+#include "../world-state/player.h"
 #include "../world-state/world-gen.h"
 #include "../world-state/pending.h"
 #include "../world-state/hashtable.h"
-#include "../world-state/player.h"
 
 #define BAUDRATE B115200
 
@@ -125,6 +125,7 @@ void notmain() {
 
     world_t* w = initialize_server();
 
+    // outdated logic, needs to pull from gpio
     // begin pulling from uart to update world
     uart_init();
     trace("Server initialized\n");
