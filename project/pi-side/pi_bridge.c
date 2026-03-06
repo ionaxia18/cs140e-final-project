@@ -63,7 +63,7 @@ void do_move(char c, player_t* player) {
     uart_put_str(" ");
     uart_put_int(player->position.y);
     uart_put_str(" ");
-    uart_put_int(new_coord.z);
+    uart_put_int(player->position.z);
     uart_put_str("\r\n");
  }
 
@@ -83,12 +83,9 @@ void change_block(char c, world_t* w, player_t* player) {
     uart_put8(' ');
     uart_put_int(block_pos.y);
     uart_put8(' ');
-    uart_put_int(p_coords.x);
-    uart_put_int(p_coords.y);
-    uart_put_int(p_coords.z);
-    for (size_t i = 0; cur_block[i] != '\0'; i++) {
-        uart_put8((uint8_t) cur_block[i]);
-    }
+    uart_put_int(block_pos.z);
+    uart_put8(' ');
+    uart_put_int(block);
     uart_put8('\n');
 }
 
@@ -99,7 +96,7 @@ void update_rotation(player_t* player, uint16_t yaw, uint16_t pitch) {
     uart_put_str("ROT ");
     uart_put_int(yaw);
     uart_put_str(" ");
-    uart_put_int(dy);
+    uart_put_int(pitch);
     uart_put_str("\n");
 }
 
