@@ -1,20 +1,18 @@
-objs/cstart.o: staff-src/cstart.c rpi.h \
- /Users/ionaxia/cs140e/cs140e-26win//libpi/libc/demand.h \
- /Users/ionaxia/cs140e/cs140e-26win//libpi/include/gpio.h \
- /Users/ionaxia/cs140e/cs140e-26win//libpi/include/rpi-constants.h \
- /Users/ionaxia/cs140e/cs140e-26win//libpi/include/your-prototypes.h \
+objs/cstart.o: staff-src/cstart.c rpi.h libc/demand.h \
+ ../libpi/include/gpio.h ../libpi/include/rpi-constants.h \
+ ../libpi/include/your-prototypes.h \
  /Users/ionaxia/cs140e/cs140e-26win//libpi/include/cycle-count.h \
  /Users/ionaxia/cs140e/cs140e-26win//libpi/include/memmap.h
 
 rpi.h:
 
-/Users/ionaxia/cs140e/cs140e-26win//libpi/libc/demand.h:
+libc/demand.h:
 
-/Users/ionaxia/cs140e/cs140e-26win//libpi/include/gpio.h:
+../libpi/include/gpio.h:
 
-/Users/ionaxia/cs140e/cs140e-26win//libpi/include/rpi-constants.h:
+../libpi/include/rpi-constants.h:
 
-/Users/ionaxia/cs140e/cs140e-26win//libpi/include/your-prototypes.h:
+../libpi/include/your-prototypes.h:
 
 /Users/ionaxia/cs140e/cs140e-26win//libpi/include/cycle-count.h:
 

@@ -2,6 +2,7 @@
 #include "world.h"
 #include "hashtable.h"
 #include "../heap/allocator.h"
+#include "player.h"
 
 static uint32_t count = 0;
 
@@ -57,7 +58,7 @@ void create_world(uint32_t seed, pos_t min, pos_t max, uint32_t edits_cap, uint3
         .rotation = (p_rot_t) {0, 0}
     };
 
-    world_t* w = world_create(&info, &player);
+    world_t* w = world_create(&info);
 
     if (!w) {
         panic("Failed to create world");

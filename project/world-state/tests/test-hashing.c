@@ -2,6 +2,7 @@
 #include "world.h"
 #include "hashtable.h"
 #include "world-gen.h"  
+#include "player.h"
 
 bool test_indices[8][8][8];
 bool expected_indices[8][8][8];
@@ -37,7 +38,7 @@ void notmain(void) {
         .rotation = (p_rot_t) {0, 0}
     };
 
-    world_t* w = world_create(&info, &player);
+    world_t* w = world_create(&info);
 
 
 

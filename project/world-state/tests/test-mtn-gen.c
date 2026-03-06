@@ -2,6 +2,8 @@
 #include "world.h"
 #include "world-gen.h"
 #include "hashtable.h"
+#include "player.h"
+
 pos_t first[150];
 pos_t second[150];
 
@@ -38,7 +40,7 @@ void notmain(void) {
         .rotation = (p_rot_t) {0, 0}
     };
 
-    world_t* w = world_create(&info, &player);
+    world_t* w = world_create(&info);
 
     if (!w) {
         panic("Failed to create world");

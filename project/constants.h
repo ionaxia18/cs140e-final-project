@@ -1,1 +1,1 @@
-#define PI_PORT "/dev/cu.usbserial-110"
+#define PI_PORT "/dev/cu.SLAB_USBtoUART"
