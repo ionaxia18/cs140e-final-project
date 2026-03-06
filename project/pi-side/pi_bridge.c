@@ -69,7 +69,7 @@ void do_move(world_t* w, char c) {
     uart_put_int(new_coord.y);
     uart_put_str(" ");
     uart_put_int(new_coord.z);
-    uart_put_str("\n");
+    uart_put_str("\r\n");
  }
 
 void change_block(char c) {
@@ -92,7 +92,7 @@ void change_block(char c) {
     for (size_t i = 0; cur_block[i] != '\0'; i++) {
         uart_put8((uint8_t) cur_block[i]);
     }
-    uart_put8('\n');
+    uart_put8('\r\n');
 }
  
 void update_rotation(world_t* w, uint16_t dx, uint16_t dy) {
@@ -102,7 +102,7 @@ void update_rotation(world_t* w, uint16_t dx, uint16_t dy) {
     uart_put_int(dx);
     uart_put_str(" ");
     uart_put_int(dy);
-    uart_put_str("\n");
+    uart_put_str("\r\n");
 }
 
 
