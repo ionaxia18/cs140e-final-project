@@ -1,5 +1,5 @@
-#PROG_SRC := $(wildcard *.c)	
-PROG_SRC += test-delete-destroy.c
+PROG_SRC := $(wildcard *.c)	
+# PROG_SRC += test-delete-destroy.c
 # PROG_SRC := test-set-diff-sizes.c
 
 DIRS := ../tests

@@ -1,6 +1,7 @@
 #include "rpi.h"
 #include "world.h"
 #include "hashtable.h"
+#include "player.h"
 
 world_t *init_world() {
     world_info_t info = {
@@ -17,7 +18,7 @@ world_t *init_world() {
         .rotation  = (p_rot_t){0, 0},
     };
 
-    world_t *w = world_create(&info, &player);
+    world_t *w = world_create(&info);
     assert(w != NULL);
     return w;
 }

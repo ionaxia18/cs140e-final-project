@@ -1,6 +1,7 @@
 #include "rpi.h"
 #include "world.h"
 #include "hashtable.h"
+#include "player.h"
 
 uint32_t make_and_read_key(pos_t p) {
     world_key_t k = world_make_key(p);

@@ -2,7 +2,7 @@
 #include "world.h"
 #include "world-gen.h"
 #include "hashtable.h"
-
+#include "player.h"
 
 void get_block_info(world_t* w, pos_t p) {
     trace("Block info at %d, %d, %d: %d\n", p.x, p.y, p.z, world_base_block(w, p));
@@ -23,7 +23,7 @@ void notmain(void) {
         .rotation = (p_rot_t) {0, 0}
     };
 
-    world_t* w = world_create(&info, &player);
+    world_t* w = world_create(&info);
 
 
     if (!w) {
@@ -42,7 +42,7 @@ void notmain(void) {
                 } else if (y == -61 || y == -62) {
                     assert(world_get_block(w, p) == BLOCK_DIRT);
                 } else if (y == -63 || y == -64) {
-                    assert(world_get_block(w, p) == BLOCK_BEDROCK);
+                    assert(world_get_block(w, p) == BLOCK_STONE);
                 } else {
                     assert(world_get_block(w, p) == BLOCK_AIR);
                 }

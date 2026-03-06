@@ -4,7 +4,8 @@ PROG_BIN := $(PROG).bin
 
 MEMMAP  := ../../libpi/memmap
 START   := ../../libpi/objs/staff-start.o
-KMALLOC := ../../libpi/staff-objs/staff-kmalloc.o
+ALLOC_SRC  := ../heap/allocator.c
+ALLOC_OBJ  := objs/allocator.o
 LPI     := ../../libpi/libpi.a
 LIBPI   := ../../libpi
 
@@ -14,7 +15,7 @@ CC  := $(ARM)-gcc
 CFLAGS := -O -Wall -Wno-unused-variable -Werror -std=gnu99
 CFLAGS += -nostdlib -nostartfiles -ffreestanding
 CFLAGS += -mcpu=arm1176jzf-s -mno-unaligned-access
-CFLAGS += -I$(LIBPI)/include -I$(LIBPI)/libc -I.. -I../world-state
+CFLAGS += -I$(LIBPI)/include -I$(LIBPI)/libc -I.. -I../world-state -I../heap
 
 # --- automatically include every .c in ../world-state ---
 WORLD_SRCS := $(wildcard ../world-state/*.c)
@@ -38,9 +39,13 @@ objs/%.o: %.c | objs
 objs/world-state/%.o: ../world-state/%.c | objs
 	$(CC) $(CFLAGS) -c $< -o $@
 
+# compile allocator
+$(ALLOC_OBJ): $(ALLOC_SRC) | objs
+	$(CC) $(CFLAGS) -c $< -o $@
+
 # link everything
-$(PROG).elf: $(PROG_OBJ) $(WORLD_OBJS) $(START) $(KMALLOC) $(LPI) $(MEMMAP)
-	$(CC) $(CFLAGS) $(START) $(PROG_OBJ) $(WORLD_OBJS) $(KMALLOC) -T $(MEMMAP) $(LPI) -o $@
+$(PROG).elf: $(PROG_OBJ) $(WORLD_OBJS) $(ALLOC_OBJ) $(START) $(LPI) $(MEMMAP)
+	$(CC) $(CFLAGS) $(START) $(PROG_OBJ) $(WORLD_OBJS) $(ALLOC_OBJ) -T $(MEMMAP) $(LPI) -lgcc -o $@
 
 # convert to .bin and dump
 $(PROG_BIN): $(PROG).elf
