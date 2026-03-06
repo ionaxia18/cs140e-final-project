@@ -13,19 +13,7 @@ float cos_deg(float deg) {
     return sin_deg(deg + 90.0f);
 }
 
-float sin_deg(float deg) {
-    float x = deg * 3.14159265 / 180.0f;
 
-    float x2 = x * x;
-    return x * (1 - x2/6 + x2*x2/120);
-}
-
-float cos_deg(float deg) {
-    return sin_deg(deg + 90.0f);
-}
-
-
-bool player_position_set(player_t* p, int16_t x, int16_t y, int16_t z) {
 bool player_position_set(player_t* p, int16_t x, int16_t y, int16_t z) {
     pos_t new_pos = (pos_t){x, y, z};
     if (!world_pos_is_valid(new_pos)) { return false; }
