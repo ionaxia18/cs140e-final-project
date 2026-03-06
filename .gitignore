@@ -1,7 +1,9 @@
+*.o
+*.d
 *.bin
 *.elf
 *.list
-*.o
+*.a 
 # Minecraft runtime files
 minecraft-server/cache/
 minecraft-server/config/
@@ -26,3 +28,5 @@ minecraft-server/whitelist.json
 
 # Logs
 *.log
+
+

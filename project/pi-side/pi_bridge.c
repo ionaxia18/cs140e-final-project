@@ -94,9 +94,9 @@ void update_rotation(player_t* player, uint16_t yaw, uint16_t pitch) {
     player_rotation_increment(player, yaw, pitch);
     // idk how to scale the rotation
     uart_put_str("ROT ");
-    uart_put_int(yaw);
+    uart_put_int(player->yaw);
     uart_put_str(" ");
-    uart_put_int(pitch);
+    uart_put_int(player->pitch);
     uart_put_str("\n");
 }
 
