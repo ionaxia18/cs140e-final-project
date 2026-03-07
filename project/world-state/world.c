@@ -33,7 +33,7 @@ bool world_pos_is_valid(pos_t p) {
 }
 
 // to do: this should somehow link to how the fruitjuice server is being started up
-world_t* world_create(const world_info_t* info, player_t* player) {
+world_t* world_create(const world_info_t* info) {
     myinit(heap_start, heap_size);
     world_t* w = mymalloc(sizeof(world_t));
     if (!w) {
@@ -62,7 +62,6 @@ world_t* world_create(const world_info_t* info, player_t* player) {
     memset(w->pending.entries, 0, w->pending.cap * sizeof(world_entry_t));
     memset(w->pending.indices, 0, w->pending.cap * sizeof(uint32_t));
 
-    w->player = player;
     return w;
 }
 
@@ -100,7 +99,6 @@ block_t world_get_block(const world_t* w, pos_t p) {
         return world_base_block(w, p);
     }
 }
-
 /* Add block info at position p to hash tables.
 Else, insert change into edits and pending tables
 Returns F if out of bounds or if tables are full */
@@ -123,17 +121,3 @@ bool world_set_block(world_t* w, pos_t p, block_t new_block) {
     return true;
     
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-

@@ -4,17 +4,25 @@
 #include <stdint.h>
 #include <stdbool.h>
 #include "rpi.h"
-#include "player.h"
 
 typedef uint8_t block_t;
 
 enum {
     BLOCK_AIR   = 0,
-    BLOCK_BEDROCK = 1,
-    BLOCK_DIRT  = 2,
-    BLOCK_GRASS = 3,
-    BLOCK_STONE = 4,
+    BLOCK_STONE = 1,
+    BLOCK_GRASS  = 2,
+    BLOCK_DIRT = 3,
+    BLOCK_COBBLESTONE = 4,
+    BLOCK_WOOD = 5,
+    BLOCK_WATER = 8
 };
+
+// might want to move out of world.h
+typedef struct {
+    int16_t x;
+    int16_t y;
+    int16_t z;
+} pos_t;
 
 typedef struct world_entry {
     block_t block;
@@ -50,7 +58,6 @@ typedef struct {
 
 struct world {
     const world_info_t* info;
-    player_t* player;
     world_table_t edits;
     pending_table_t pending;
 };
@@ -73,7 +80,7 @@ bool world_pos_is_valid(pos_t p);
 
 /* Allocate and init world state hash tables
 Returns null if fail */
-world_t* world_create(const world_info_t* info, player_t* player);
+world_t* world_create(const world_info_t* info);
 
 // Reset world to original state
 void world_reset(world_t* w);
@@ -84,6 +91,8 @@ bool block_pos_equal(pos_t p1, pos_t p2);
 
 // Get current block info at position p 
 block_t world_get_block(const world_t* w, pos_t p);
+
+char * block_to_str(block_t block);
 
 /* Modify block info at position p: 
 If new_block == base_block, no edit is recorded

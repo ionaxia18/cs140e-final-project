@@ -37,7 +37,7 @@ block_t flat_world(pos_t p) {
     } else if (y < -60 && y > -63) {
         return BLOCK_DIRT;
     } else if (y <= -63 && y > -65) {
-        return BLOCK_BEDROCK;
+        return BLOCK_STONE;
     } else {
         return BLOCK_AIR;
     }

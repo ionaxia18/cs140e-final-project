@@ -46,10 +46,13 @@ CGEventRef trackpad_event_handler(CGEventTapProxy proxy, CGEventType type, CGEve
     struct timespec now;
     clock_gettime(CLOCK_MONOTONIC, &now);
     if (now.tv_sec - last_send.tv_sec + (now.tv_nsec - last_send.tv_nsec) / 1000000000.0 > SEND_INTERVAL) {
-        char buffer[32];
-        int len = snprintf(buffer, sizeof(buffer), "m %d %d\n", accum_dx, accum_dy);
+        unsigned char buf[3];
+        buf[0] = 'm';
+        buf[1] = (unsigned char)accum_dx;
+        buf[2] = (unsigned char)accum_dy;
+
+        write(fd, buf, 3);
         printf("sending mouse move %d %d\n", accum_dx, accum_dy);
-        write(fd, buffer, len);\
         accum_dx = 0;
         accum_dy = 0;
         last_send = now;
@@ -75,12 +78,13 @@ void *trackpad_loop_thread(void *arg) {
 
 int main() {
     printf("starting bridge-pi\n");
+    printf("trying to open %s\n", PI_PORT);
     fd = open(PI_PORT, O_RDWR | O_NOCTTY);
     if (fd < 0) {
-        printf("open failed: %s\n", strerror(errno));
+        printf("open(%s) failed: errno=%d (%s)\n", PI_PORT, errno, strerror(errno));
         return 1;
     }
-    printf("fd opened\n");
+    printf("opened %s with fd=%d\n", PI_PORT, fd);
     
     struct termios tty;
     tcgetattr(fd, &tty);

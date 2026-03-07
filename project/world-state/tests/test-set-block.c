@@ -1,6 +1,7 @@
 #include "rpi.h"
 #include "world.h"
 #include "hashtable.h"
+#include "player.h"
 
 static uint32_t count = 0;
 void notmain(void) {
@@ -19,7 +20,7 @@ void notmain(void) {
         .rotation = (p_rot_t) {0, 0}
     };
 
-    world_t* w = world_create(&info, &player);
+    world_t* w = world_create(&info);
     if (!w) {
         panic("Failed to create world");
     }
