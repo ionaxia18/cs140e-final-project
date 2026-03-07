@@ -34,4 +34,5 @@ project/bridge/bridge-pi
 # Logs
 *.log
 
-
+# DS_Store
+*.DS_Store
