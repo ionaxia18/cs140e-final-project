@@ -88,7 +88,6 @@ void change_block(char c, world_t* w, player_t* player) {
     uart_put_int(block);
     uart_put8('\n');
 }
-
  
 void update_rotation(player_t* player, uint16_t yaw, uint16_t pitch) {
     player_rotation_increment(player, yaw, pitch);
