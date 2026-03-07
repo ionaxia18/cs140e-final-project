@@ -58,15 +58,21 @@ block_t pointing_block(world_t* w, player_t* p, pos_t* block_pos) {
     float dx = -sin_deg(rot.yaw) * cos_deg(rot.pitch);
     float dy = sin_deg(rot.pitch);
     float dz = cos_deg(rot.yaw) * cos_deg(rot.pitch);
-    int16_t max_distance = 2;
+    int16_t max_distance = 3;
     float step_size = 0.5;
     for (int i = 0; i < max_distance; i++) {
-        pos_t new_pos = (pos_t){(int16_t)(pos.x + dx * step_size), (int16_t)(pos.y + dy * step_size), (int16_t)(pos.z + dz * step_size)};
+        pos_t new_pos = (pos_t){(int16_t)(pos.x + dx * i), (int16_t)(pos.y + dy * i), (int16_t)(pos.z + dz * i)};
+        if (new_pos.x == pos.x &&
+            new_pos.y == pos.y &&
+            new_pos.z == pos.z)
+            continue;
         if (!world_pos_is_valid(new_pos)) { return BLOCK_AIR; }
         if (world_get_block(w, new_pos) != BLOCK_AIR) { 
+            trace("current block position is %d, %d, %d", block_pos->x, block_pos->y, block_pos->z);
             *block_pos = new_pos;
             return world_get_block(w, new_pos); 
         }
     }
+    trace("no blocks");
     return BLOCK_AIR;
 }
