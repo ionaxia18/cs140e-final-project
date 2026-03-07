@@ -7,7 +7,8 @@
 *.list
 *.a 
 
-constants.h
+projects/constants.h
+
 # Minecraft runtime files
 minecraft-server/cache/
 minecraft-server/config/
