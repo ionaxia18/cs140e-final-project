@@ -91,7 +91,7 @@ void change_block(char c, block_t block, pos_t pos) {
     for (size_t i = 0; cur_block[i] != '\0'; i++) {
         uart_put8((uint8_t) cur_block[i]);
     }
-    uart_put8('\n');
+    uart_put8('\r\n');
 }
  
 void update_rotation(world_t* w, uint16_t yaw, uint16_t pitch) {
