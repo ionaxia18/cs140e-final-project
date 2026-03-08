@@ -45,7 +45,6 @@ void send_set_block(pos_t p, block_t new_block) {
     uart_put8('\n');
 }
 
-// need to move to new file, put here for now
 // assumes position is valid, id not being used, unsure how fruitjuice likes it
 void send_player_move(player_t* p) {
     uart_put_str("PLAYER ");
