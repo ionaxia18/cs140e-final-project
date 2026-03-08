@@ -7,11 +7,34 @@
 #include <termios.h>
 #include <fcntl.h>
 #include "../constants.h"
-
 #define PLUGIN_IP "127.0.0.1"
 #define PLUGIN_PORT 4711
-
 #define BAUDRATE    B115200
+
+typedef uint8_t block_t;
+
+enum {
+    BLOCK_AIR   = 0,
+    BLOCK_STONE = 1,
+    BLOCK_GRASS  = 2,
+    BLOCK_DIRT = 3,
+    BLOCK_COBBLESTONE = 4,
+    BLOCK_WOOD = 5,
+    BLOCK_WATER = 8
+};
+
+char *block_name(block_t b) {
+    switch (b) {
+        case BLOCK_AIR: return "AIR";
+        case BLOCK_STONE: return "STONE";
+        case BLOCK_GRASS: return "GRASS";
+        case BLOCK_DIRT: return "DIRT";
+        case BLOCK_COBBLESTONE: return "COBBLESTONE";
+        case BLOCK_WOOD: return "WOOD";
+        case BLOCK_WATER: return "WATER";
+        default: return "UNKNOWN";
+    }
+}
 
 // setup tcp function so that it can be used to talk to fruitjuice plugin
 int connect_to_fruitjuice(const char * ip, int port) {
@@ -25,12 +48,15 @@ int connect_to_fruitjuice(const char * ip, int port) {
     server_addr.sin_port = htons(port);
     inet_pton(AF_INET, ip, &server_addr.sin_addr);
     // bridge needs to act as TCP client
-    connect(sock, (struct sockaddr *)&server_addr, sizeof(server_addr));
-
+    if (connect(sock, (struct sockaddr *)&server_addr, sizeof(server_addr)) < 0) {
+        perror("connect");
+        close(sock);
+        return -1;
+    }
     return sock;
 }
 
-void put_block(int sock, int x, int y, int z, const char * block) {
+void put_block(int sock, int x, int y, int z, char* block) {
     char buf[128];
     sprintf(buf, "world.setBlock(%d,%d,%d,%s)\n", x, y, z, block);
     send(sock, buf, strlen(buf), 0);
@@ -45,6 +71,7 @@ void move_player(int sock, int x, int y, int z) {
 void send_player_rotation(int sock, int dx, int dy) {
     char buf[128];
     sprintf(buf, "player.setRotation(%d)\n", dx);
+    send(sock, buf, strlen(buf), 0);
     sprintf(buf, "player.setPitch(%d)\n", dy);
     send(sock, buf, strlen(buf), 0);
 }
@@ -68,7 +95,8 @@ int setup_pi_connection(const char * device) {
 
 int fruit_juice_test(int sock) {
     // move_player(sock, 235, 65, -1);
-    put_block(sock, 235, 65, -1, "DIAMOND_BLOCK");
+    // put_block(sock, 235, 65, -1, "DIAMOND_BLOCK");
+    put_block(sock, 235, 65, -1, 0);
     return 1;
 }
 
@@ -78,11 +106,6 @@ int main() {
         return 1;
     }
     printf("sock created\n");
-
-    // fruit_juice_test(sock);
-    // close(sock);
-    // return 0;
-
 
     int pi_fd = setup_pi_connection(PI_PORT);
     if (pi_fd < 0) {
@@ -104,7 +127,7 @@ int main() {
         }
         if (c == '\n' || c == '\r') {
 
-            if (buf_idx > 0 && buffer[buf_idx - 1] == '\r') {
+            if (buf_idx > 0 && (buffer[buf_idx - 1] == '\r' || buffer[buf_idx - 1] == '\t')) {
                 buf_idx--;
             }
 
@@ -113,14 +136,13 @@ int main() {
 
             char cmd[16];
             int x, y, z, dx, dy;
-            char block[64];
-
+            int block = 0;
             printf("%s\n", buffer);
 
-            if (sscanf(buffer, "%15s %d %d %d %63s", cmd, &x, &y, &z, block) == 5) {
+            if (sscanf(buffer, "%15s %d %d %d %d", cmd, &x, &y, &z, &block) == 5) {
                 if (strcmp(cmd, "BLOCK") == 0) {
-                    put_block(sock, x, y, z, block);
-                    printf("put block %d %d %d %s\n", x, y, z, block);
+                    put_block(sock, x, y, z, block_name(block));
+                    printf("put block %d %d %d %s\n", x, y, z, block_name(block));
                 }
             }
             else if (sscanf(buffer, "%15s %d %d %d", cmd, &x, &y, &z) == 4) {
