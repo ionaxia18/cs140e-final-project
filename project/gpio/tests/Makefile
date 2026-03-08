@@ -1,6 +1,6 @@
 # PROG_SRC := $(wildcard *.c)	
-PROG_SRC += matrix-test.c
-
+# PROG_SRC += matrix-test.c
+PROG_SRC += test-joystick.c
 
 DIRS := ../tests
 

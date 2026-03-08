@@ -69,11 +69,11 @@ block_t pointing_block(world_t* w, player_t* p, pos_t* block_pos) {
             continue;
         if (!world_pos_is_valid(new_pos)) { return BLOCK_AIR; }
         if (world_get_block(w, new_pos) != BLOCK_AIR) { 
-            trace("current block position is %d, %d, %d", block_pos->x, block_pos->y, block_pos->z);
+            // trace("current block position is %d, %d, %d", block_pos->x, block_pos->y, block_pos->z);
             *block_pos = new_pos;
             return world_get_block(w, new_pos); 
         }
     }
-    trace("no blocks");
+    // trace("no blocks");
     return BLOCK_AIR;
 }

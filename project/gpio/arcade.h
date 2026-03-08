@@ -13,6 +13,7 @@
 #define PIN_DOWN 22
 
 void arcade_init(void);
-pos_t arcade_read(void);
+
+void arcade_read(pos_t*);
 
 #endif
