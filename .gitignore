@@ -1,14 +1,10 @@
 *.o
 *.d
-*.o
-*.d
 *.bin
 *.elf
 *.list
 *.a 
-
 projects/constants.h
-
 # Minecraft runtime files
 minecraft-server/cache/
 minecraft-server/config/
@@ -38,5 +34,4 @@ project/bridge-pi
 # Logs
 *.log
 
-# DS_Store
-*.DS_Store
+
