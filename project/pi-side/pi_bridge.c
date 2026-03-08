@@ -4,8 +4,6 @@
 #include "../constants.h"
 // #include "../world-state/world.h"
 #include "../world-state/player.h"
-// #include "../world-state/world.h"
-#include "../world-state/player.h"
 #include "../world-state/world-gen.h"
 #include "../world-state/pending.h"
 #include "../world-state/hashtable.h"
