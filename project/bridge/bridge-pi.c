@@ -79,11 +79,14 @@ void *trackpad_loop_thread(void *arg) {
 int main() {
     printf("starting bridge-pi\n");
     printf("trying to open %s\n", PI_PORT);
+    printf("trying to open %s\n", PI_PORT);
     fd = open(PI_PORT, O_RDWR | O_NOCTTY);
     if (fd < 0) {
         printf("open(%s) failed: errno=%d (%s)\n", PI_PORT, errno, strerror(errno));
+        printf("open(%s) failed: errno=%d (%s)\n", PI_PORT, errno, strerror(errno));
         return 1;
     }
+    printf("opened %s with fd=%d\n", PI_PORT, fd);
     printf("opened %s with fd=%d\n", PI_PORT, fd);
     
     struct termios tty;

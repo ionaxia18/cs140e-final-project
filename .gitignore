@@ -4,6 +4,7 @@
 *.elf
 *.list
 *.a 
+*.a 
 # Minecraft runtime files
 minecraft-server/cache/
 minecraft-server/config/
@@ -26,7 +27,12 @@ minecraft-server/banned-ips.json
 minecraft-server/ops.json
 minecraft-server/whitelist.json
 
+# bridge binaries
+project/bridge/bridge-minecraft
+project/bridge/bridge-pi
 # Logs
 *.log
+
+
 
 

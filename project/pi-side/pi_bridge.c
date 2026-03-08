@@ -1,11 +1,15 @@
 // #include "pi_bridge.h"
+// #include "pi_bridge.h"
 #include "../../libpi/rpi.h"
 #include "../constants.h"
+// #include "../world-state/world.h"
+#include "../world-state/player.h"
 // #include "../world-state/world.h"
 #include "../world-state/player.h"
 #include "../world-state/world-gen.h"
 #include "../world-state/pending.h"
 #include "../world-state/hashtable.h"
+
 
 #define BAUDRATE B115200
 
@@ -44,6 +48,7 @@ void uart_put_str(char* str) {
 
 // takes in a character move, will move the player on pi side and return new coordinates
 void do_move(char c, player_t* player) {
+void do_move(char c, player_t* player) {
     if (c == 'w') {
         player_position_increment(player, 0, 1, 0);
     } else if (c == 'a') {
@@ -65,8 +70,10 @@ void do_move(char c, player_t* player) {
     uart_put_str(" ");
     uart_put_int(player->position.z);
     uart_put_str("\r\n");
+    uart_put_str("\r\n");
  }
 
+void change_block(char c, world_t* w, player_t* player) {
 void change_block(char c, world_t* w, player_t* player) {
     // this depends on how we update the player rotation ?
     pos_t block_pos = pointing_block(w, player);
@@ -77,7 +84,15 @@ void change_block(char c, world_t* w, player_t* player) {
     }
     else if (c == 'r') {
         world_set_block(w, block_pos, BLOCK_AIR);
+        world_set_block(w, block_pos, BLOCK_AIR);
     }
+    uart_put_str("BLOCK ");
+    uart_put8(' ');
+    uart_put_int(block_pos.x);
+    uart_put8(' ');
+    uart_put_int(block_pos.y);
+    uart_put8(' ');
+    uart_put_int(block_pos.z);
     uart_put_str("BLOCK ");
     uart_put8(' ');
     uart_put_int(block_pos.x);
@@ -92,15 +107,21 @@ void change_block(char c, world_t* w, player_t* player) {
 
  
 void update_rotation(player_t* player, uint16_t yaw, uint16_t pitch) {
+
+ 
+void update_rotation(player_t* player, uint16_t yaw, uint16_t pitch) {
     player_rotation_increment(player, yaw, pitch);
     // idk how to scale the rotation
     uart_put_str("ROT ");
     uart_put_int(player->rotation.yaw);
+    uart_put_int(player->rotation.yaw);
     uart_put_str(" ");
+    uart_put_int(player->rotation.pitch);
     uart_put_int(player->rotation.pitch);
     uart_put_str("\n");
 }
 
+world_t* initialize_server() {
 world_t* initialize_server() {
     // initialize world seed
     world_info_t info = {
@@ -112,8 +133,10 @@ world_t* initialize_server() {
     };
 
     world_t* w = world_create(&info);
+    world_t* w = world_create(&info);
     if (!w) {
         panic("Failed to create world");
+        return w;
         return w;
     }
     return w;
@@ -122,11 +145,13 @@ world_t* initialize_server() {
 void notmain() {
     player_t player = {.player_id = 0,
         .position = (pos_t) {0, 0, -60},
+        .position = (pos_t) {0, 0, -60},
         .rotation = (p_rot_t) {0, 0}
     };
 
     world_t* w = initialize_server();
 
+    // outdated logic, needs to pull from gpio
     // outdated logic, needs to pull from gpio
     // begin pulling from uart to update world
     uart_init();
@@ -138,6 +163,7 @@ void notmain() {
                 do_move(c, &player);
             }
             else if (c == 'p' || c == 'r') {
+                change_block(c, w, &player);
                 change_block(c, w, &player);
             } else if (c == 'm') {
                 while (!uart_has_data()) {}

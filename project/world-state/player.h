@@ -5,8 +5,11 @@
 #include <stdbool.h>
 #include "rpi.h"
 #include "world.h"
+#include "world.h"
 
 typedef struct {
+    int16_t yaw;
+    int16_t pitch;
     int16_t yaw;
     int16_t pitch;
 } p_rot_t;
@@ -22,6 +25,11 @@ float cos_deg(int deg);
 
 typedef struct player player_t;
 
+bool player_position_set(player_t* p, int16_t x, int16_t y, int16_t z);
+
+bool player_position_increment(player_t* p, int16_t dx, int16_t dy, int16_t dz);
+
+bool player_rotation_increment(player_t* p, int16_t yaw, int16_t pitch);
 bool player_position_set(player_t* p, int16_t x, int16_t y, int16_t z);
 
 bool player_position_increment(player_t* p, int16_t dx, int16_t dy, int16_t dz);
