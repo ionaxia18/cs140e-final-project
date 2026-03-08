@@ -119,7 +119,8 @@ int main() {
     char c;
     
     printf("connecting to pi \n");
-
+    char buf[128];
+    sprintf(buf, "/setworldspawn 0 4 0");
     while (1) {
         int n = read(pi_fd, &c, 1);
         if (n <= 0) {

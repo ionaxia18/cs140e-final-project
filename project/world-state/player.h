@@ -10,8 +10,6 @@
 typedef struct {
     int16_t yaw;
     int16_t pitch;
-    int16_t yaw;
-    int16_t pitch;
 } p_rot_t;
 
 struct player {

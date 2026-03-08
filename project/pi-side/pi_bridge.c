@@ -16,7 +16,6 @@
 #define BAUDRATE B115200
 // takes in a character move, will move the player on pi side and return new coordinates
 void do_move(char c, player_t* player) {
-void do_move(char c, player_t* player) {
     if (c == 'w') {
         player_position_increment(player, 0, 1, 0);
     } else if (c == 'a') {
@@ -42,7 +41,6 @@ void do_move(char c, player_t* player) {
  }
 
 void change_block(char c, world_t* w, player_t* player) {
-void change_block(char c, world_t* w, player_t* player) {
     // this depends on how we update the player rotation ?
     pos_t block_pos = pointing_block(w, player);
     block_t block = BLOCK_AIR;
@@ -65,22 +63,17 @@ void change_block(char c, world_t* w, player_t* player) {
     uart_put_int(block);
     uart_put8('\n');
 }
-
  
-void update_rotation(player_t* player, uint16_t yaw, uint16_t pitch) {
-
- 
-void update_rotation(player_t* player, uint16_t yaw, uint16_t pitch) {
-    player_rotation_increment(player, yaw, pitch);
+// void update_rotation(player_t* player, uint16_t yaw, uint16_t pitch) {
+//     player_rotation_increment(player, yaw, pitch);
     // idk how to scale the rotation
     // uart_put_str("ROT ");
     // uart_put_int(player->rotation.yaw);
     // uart_put_str(" ");
     // uart_put_int(player->rotation.pitch);
     // uart_put_str("\n");
-}
+// }
 
-world_t* initialize_server() {
 world_t* initialize_server() {
     // initialize world seed
     world_info_t info = {
@@ -91,7 +84,6 @@ world_t* initialize_server() {
         .pending_cap = 1024,
     };
 
-    world_t* w = world_create(&info);
     world_t* w = world_create(&info);
     if (!w) {
         panic("Failed to create world");
@@ -111,7 +103,6 @@ bool rotation_changed(p_rot_t cur, p_rot_t old) {
 
 void notmain() {
     player_t player = {.player_id = 0,
-        .position = (pos_t) {0, 0, -60},
         .position = (pos_t) {0, 0, -60},
         .rotation = (p_rot_t) {0, 0}
     };
