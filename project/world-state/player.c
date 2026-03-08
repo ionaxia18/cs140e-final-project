@@ -2,14 +2,17 @@
 #include "world.h"
 #include "../pi-side/uart-helpers.h"
 
-float sin_deg(float deg) {
-    float x = deg * 3.14159265 / 180.0f;
+float sin_deg(int deg) {
+    while (deg > 180.0) deg -= 360.0;
+    while (deg < -180.0) deg += 360.0;
+
+    float x = deg * 3.14159265f / 180.0f;
 
     float x2 = x * x;
     return x * (1 - x2/6 + x2*x2/120);
 }
 
-float cos_deg(float deg) {
+float cos_deg(int deg) {
     return sin_deg(deg + 90.0f);
 }
 
@@ -52,27 +55,24 @@ bool player_position_increment(player_t* p, int16_t dx, int16_t dy, int16_t dz) 
     return true;
 }
 
-block_t pointing_block(world_t* w, player_t* p, pos_t* block_pos) {
+pos_t pointing_block(world_t* w, player_t* p) {
     pos_t pos = p->position;
     p_rot_t rot = p->rotation;
     float dx = -sin_deg(rot.yaw) * cos_deg(rot.pitch);
     float dy = sin_deg(rot.pitch);
     float dz = cos_deg(rot.yaw) * cos_deg(rot.pitch);
-    int16_t max_distance = 3;
-    float step_size = 0.5;
-    for (int i = 0; i < max_distance; i++) {
+    int16_t max_distance = 2;
+    float step_size = 0.1;
+     trace("current difference is %d, %d, %d", (int16_t)(dx * 10), (int16_t)(dy * 10), (int16_t)(dz * 10));
+    for (float i = 0; i < max_distance; i+= 0.05) {
         pos_t new_pos = (pos_t){(int16_t)(pos.x + dx * i), (int16_t)(pos.y + dy * i), (int16_t)(pos.z + dz * i)};
         if (new_pos.x == pos.x &&
             new_pos.y == pos.y &&
             new_pos.z == pos.z)
             continue;
-        if (!world_pos_is_valid(new_pos)) { return BLOCK_AIR; }
-        if (world_get_block(w, new_pos) != BLOCK_AIR) { 
-            trace("current block position is %d, %d, %d", block_pos->x, block_pos->y, block_pos->z);
-            *block_pos = new_pos;
-            return world_get_block(w, new_pos); 
-        }
+        if (!world_pos_is_valid(new_pos)) { return p->position; }
+        trace("current block position is %d, %d, %d", new_pos.x, new_pos.y, new_pos.z);
+        return new_pos;
     }
-    trace("no blocks");
-    return BLOCK_AIR;
+    return p->position;
 }

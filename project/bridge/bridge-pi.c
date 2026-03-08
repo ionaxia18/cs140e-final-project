@@ -48,8 +48,8 @@ CGEventRef trackpad_event_handler(CGEventTapProxy proxy, CGEventType type, CGEve
     if (now.tv_sec - last_send.tv_sec + (now.tv_nsec - last_send.tv_nsec) / 1000000000.0 > SEND_INTERVAL) {
         unsigned char buf[3];
         buf[0] = 'm';
-        buf[1] = (unsigned char)accum_dx;
-        buf[2] = (unsigned char)accum_dy;
+        buf[1] = (int8_t)accum_dx;
+        buf[2] = (int8_t)accum_dy;
 
         write(fd, buf, 3);
         printf("sending mouse move %d %d\n", accum_dx, accum_dy);

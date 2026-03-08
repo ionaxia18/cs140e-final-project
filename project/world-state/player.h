@@ -17,8 +17,8 @@ struct player {
     p_rot_t rotation;
 };
 
-float sin_deg(float deg);
-float cos_deg(float deg);
+float sin_deg(int deg);
+float cos_deg(int deg);
 
 typedef struct player player_t;
 
@@ -30,7 +30,7 @@ bool player_rotation_increment(player_t* p, int16_t yaw, int16_t pitch);
 
 bool player_rotation_set(player_t* p, int16_t x, int16_t y);
 
-block_t pointing_block(world_t* w, player_t* p, pos_t* block_pos);
+pos_t pointing_block(world_t* w, player_t* p);
 
 #endif 
 

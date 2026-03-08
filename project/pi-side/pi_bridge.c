@@ -69,10 +69,11 @@ void do_move(char c, player_t* player) {
 
 void change_block(char c, world_t* w, player_t* player) {
     // this depends on how we update the player rotation ?
-    pos_t block_pos = {0, 0, 0};
-    block_t block = pointing_block(w, player, &block_pos);
+    pos_t block_pos = pointing_block(w, player);
+    block_t block = BLOCK_AIR;
     if (c == 'p') {
-        world_set_block(w, block_pos, block);
+        world_set_block(w, block_pos, BLOCK_STONE);
+        block = BLOCK_STONE;
     }
     else if (c == 'r') {
         world_set_block(w, block_pos, BLOCK_AIR);
@@ -140,9 +141,9 @@ void notmain() {
                 change_block(c, w, &player);
             } else if (c == 'm') {
                 while (!uart_has_data()) {}
-                uint32_t dx = uart_get8();
+                int8_t dx = uart_get8();
                 while (!uart_has_data()) {}
-                uint32_t dy = uart_get8();
+                int8_t dy = uart_get8();
                 update_rotation(&player, dx, dy);
             } else if (c == 'q') {
                 uart_flush_tx();
