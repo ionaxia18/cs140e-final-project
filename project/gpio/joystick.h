@@ -5,7 +5,6 @@
 #include "spi.h"
 #include "gpio.h"
 #include "../world-state/player.h"
-#define LED_PIN 26
 
 // init gpio output pin for joystick led
 void joystick_init(void);

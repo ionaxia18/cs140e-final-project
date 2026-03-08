@@ -6,7 +6,6 @@ static spi_t spi;
 void joystick_init(void) {
     dev_barrier();
     spi = spi_n_init(SPI_CE0, 256);
-    gpio_set_output(LED_PIN);
     dev_barrier();
 }
 
