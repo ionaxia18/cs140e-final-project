@@ -103,7 +103,7 @@ bool rotation_changed(p_rot_t cur, p_rot_t old) {
 
 void notmain() {
     player_t player = {.player_id = 0,
-        .position = (pos_t) {0, 0, -60},
+        .position = (pos_t) {0, -60, 0},
         .rotation = (p_rot_t) {0, 0}
     };
 

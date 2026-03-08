@@ -11,10 +11,10 @@ void arcade_init(void) {
 
 void arcade_read(pos_t* pos) {
     dev_barrier();
-    // trace("R=%d L=%d U=%d D=%d\n",gpio_read(PIN_RIGHT),!gpio_read(PIN_LEFT),gpio_read(PIN_UP),gpio_read(PIN_DOWN));
+    trace("R=%d L=%d U=%d D=%d\n",gpio_read(PIN_RIGHT),gpio_read(PIN_LEFT),gpio_read(PIN_UP),gpio_read(PIN_DOWN));
     if (!gpio_read(PIN_RIGHT)) pos->x += 1;
-    if (gpio_read(PIN_LEFT))  pos->x += -1;
-    if (!gpio_read(PIN_UP))    pos->y += 1;
-    if (!gpio_read(PIN_DOWN))  pos->y += -1;
+    if (!gpio_read(PIN_LEFT))  pos->x += -1;
+    if (!gpio_read(PIN_UP))    pos->z += 1;
+    if (!gpio_read(PIN_DOWN))  pos->z += -1;
     dev_barrier();
 }

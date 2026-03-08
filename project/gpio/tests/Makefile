@@ -1,13 +1,14 @@
 # PROG_SRC := $(wildcard *.c)	
 # PROG_SRC += matrix-test.c
-PROG_SRC += test-joystick.c
+# PROG_SRC += test-joystixck.c
+PROG_SRC += arcade-test.c
 
 DIRS := ../tests
 
 PROGS := $(PROG_SRC:.c=.bin)
 
 LIBPI     := ../../../libpi
-WORLD_SRC := ../joystick.c ../matrix.c
+WORLD_SRC := ../joystick.c ../matrix.c ../arcade.c
 
 MEMMAP := $(LIBPI)/memmap
 START  := $(LIBPI)/staff-start.o
