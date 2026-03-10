@@ -53,7 +53,7 @@ world_t* initialize_server() {
         .seed = 0,
         .min = (pos_t){0, -60, 0},
         .max = (pos_t){16, -44, 16},
-        .edits_cap = 4096,
+        .edits_cap = 2048,
         .pending_cap = 1024,
     };
 
@@ -102,14 +102,16 @@ void notmain() {
             last_pos = player.position;
         }
         if (rotation_changed(player.rotation, last_rot)) {
-            uart_put_str("   ");
             send_player_rotation(&player);
             last_rot = player.rotation;
         }
         block_selected = read_block();
-        if (block_selected) {
-            uart_put_str("   ");
+        if (block_selected && block_selected != 16) {
             change_block(true, w, &player, block_selected);
+        }
+        if (block_selected == 16) { 
+            world_destroy(w);
+            return; 
         }
         // this is placing with joystick, replace with placing with matrix
         // if (!place) {
@@ -119,5 +121,4 @@ void notmain() {
         delay_ms(100);
         uart_flush_tx();
     }
-
 }

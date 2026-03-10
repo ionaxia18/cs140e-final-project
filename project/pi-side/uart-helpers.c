@@ -25,7 +25,28 @@ void uart_put_int(int val) {
         uart_put8(buf[i]);
     }
 }
+void uart_put_float(float f) {
+    if (f < 0) {
+        uart_put8('-');
+        f = -f;
+    }
 
+    int int_part = (int)f;
+    uart_put_int(int_part);
+
+    float frac = f - int_part;
+    if (frac == 0) {
+        return;
+    }
+
+    uart_put8('.');
+    for (int i = 0; i < 3; i++) {   // 3 decimal places
+        frac *= 10;
+        int digit = (int)frac;
+        uart_put8('0' + digit);
+        frac -= digit;
+    }
+}
 void uart_put_str(char* str) {
     for (int i = 0; str[i] != '\0'; i++) {
         uart_put8(str[i]);
@@ -35,11 +56,11 @@ void uart_put_str(char* str) {
 void send_set_block(pos_t p, block_t new_block) {
     uart_put_str("BLOCK ");
     uart_put8(' ');
-    uart_put_int(p.x);
+    uart_put_float(p.x);
     uart_put8(' ');
-    uart_put_int(p.y);
+    uart_put_float(p.y);
     uart_put8(' ');
-    uart_put_int(p.z);
+    uart_put_float(p.z);
     uart_put8(' ');
     uart_put_int(new_block);
     uart_put8('\n');
@@ -48,11 +69,11 @@ void send_set_block(pos_t p, block_t new_block) {
 // assumes position is valid, id not being used, unsure how fruitjuice likes it
 void send_player_move(player_t* p) {
     uart_put_str("PLAYER ");
-    uart_put_int(p->position.x);
+    uart_put_float(p->position.x);
     uart_put_str(" ");
-    uart_put_int(p->position.y);
+    uart_put_float(p->position.y);
     uart_put_str(" ");
-    uart_put_int(p->position.z);
+    uart_put_float(p->position.z);
     uart_put_str("\n");
 }
 
