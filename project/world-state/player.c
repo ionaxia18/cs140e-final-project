@@ -61,16 +61,19 @@ pos_t pointing_block(world_t* w, player_t* p) {
     float dy = sin_deg(rot.pitch);
     float dz = cos_deg(rot.yaw) * cos_deg(rot.pitch);
     int16_t max_distance = 2;
-     trace("current difference is %d, %d, %d", (int16_t)(dx * 10), (int16_t)(dy * 10), (int16_t)(dz * 10));
+    float step_size = 0.1;
+    pos_t new_pos = pos;
+    pos_t last_pos = pos;
+    //  trace("current difference is %d, %d, %d", (int16_t)(dx * 10), (int16_t)(dy * 10), (int16_t)(dz * 10));
     for (float i = 0; i < max_distance; i+= 0.05) {
-        pos_t new_pos = (pos_t){(int16_t)(pos.x + dx * i), (int16_t)(pos.y + dy * i), (int16_t)(pos.z + dz * i)};
+        new_pos = (pos_t){(int16_t)(pos.x + dx * i), (int16_t)(pos.y + dy * i), (int16_t)(pos.z + dz * i)};
         if (new_pos.x == pos.x &&
             new_pos.y == pos.y &&
             new_pos.z == pos.z)
             continue;
-        if (!world_pos_is_valid(new_pos)) { return p->position; }
-        trace("current block position is %d, %d, %d", new_pos.x, new_pos.y, new_pos.z);
-        return new_pos;
+        if (!world_pos_is_valid(new_pos)) { return last_pos; }
+        // trace("current block position is %d, %d, %d", new_pos.x, new_pos.y, new_pos.z);
+        last_pos = pos;
     }
-    return p->position;
+    return new_pos;
 }
