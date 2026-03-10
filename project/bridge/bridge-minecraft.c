@@ -27,10 +27,10 @@ char *block_name(block_t b) {
     switch (b) {
         case BLOCK_AIR: return "AIR";
         case BLOCK_STONE: return "STONE";
-        case BLOCK_GRASS: return "GRASS";
+        case BLOCK_GRASS: return "GRASS_BLOCK";
         case BLOCK_DIRT: return "DIRT";
         case BLOCK_COBBLESTONE: return "COBBLESTONE";
-        case BLOCK_WOOD: return "WOOD";
+        case BLOCK_WOOD: return "OAK_LOG";
         case BLOCK_WATER: return "WATER";
         default: return "UNKNOWN";
     }
@@ -136,33 +136,34 @@ int main() {
             buf_idx = 0;
 
             char cmd[16];
-            int x, y, z, dx, dy;
+            float x, y, z; 
+            int rp, ry;
             int block = 0;
             printf("%s\n", buffer);
 
-            if (sscanf(buffer, "%15s %d %d %d %d", cmd, &x, &y, &z, &block) == 5) {
+            if (sscanf(buffer, "%15s %f %f %f %d", cmd, &x, &y, &z, &block) == 5) {
                 if (strcmp(cmd, "BLOCK") == 0) {
                     put_block(sock, x, y, z, block_name(block));
-                    printf("put block %d %d %d %s\n", x, y, z, block_name(block));
+                    printf("put block %f %f %f %s\n", x, y, z, block_name(block));
                 }
             }
-            else if (sscanf(buffer, "%15s %d %d %d", cmd, &x, &y, &z) == 4) {
+            else if (sscanf(buffer, "%15s %f %f %f", cmd, &x, &y, &z) == 4) {
                 if (strcmp(cmd, "PLAYER") == 0) {
                     move_player(sock, x, y, z);
-                    printf("move player %d %d %d\n", x, y, z);
+                    printf("move player %f %f %f\n", x, y, z);
                 }
             }
-            else if (sscanf(buffer, "%15s %d %d", cmd, &dx, &dy) == 3) {
+            else if (sscanf(buffer, "%15s %d %d", cmd, &rp, &ry) == 3) {
                 if (strcmp(cmd, "ROT") == 0) {
-                    send_player_rotation(sock, dx, dy);
-                    printf("send player rotation %d %d\n", dx, dy);
+                    send_player_rotation(sock, rp, ry);
+                    printf("send player rotation %d %d\n", rp, ry);
                 }
             }
 
         } else {
             if (buf_idx < sizeof(buffer) - 1) {
                 if (!(c == ' ' || c == '-' || (c >= '0' && c <= '9') ||
-                    (c >= 'A' && c <= 'Z') || (c >= 'a' && c <= 'z'))) {
+                    (c >= 'A' && c <= 'Z') || (c >= 'a' && c <= 'z') || (c == '.'))) {
                     buffer[buf_idx++] = ' ';   // turn weird separators into spaces
                 } else {
                 buffer[buf_idx++] = c;

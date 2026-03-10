@@ -10,7 +10,7 @@ static void* heap_start = heap;
 world_key_t world_make_key(pos_t p) {
     uint32_t mask = 0x3ff; 
     // mask to get rid of sign bit
-    return ((p.x & mask) << 20) | ((p.y & mask) << 10) | (p.z & mask);
+    return (((uint16_t)p.x & mask) << 20) | (((uint16_t)p.y & mask) << 10) | ((uint16_t)p.z & mask);
 }
 
 pos_t world_read_key(world_key_t k){
