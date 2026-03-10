@@ -153,10 +153,12 @@ void *kmalloc_aligned(unsigned nbytes, unsigned alignment);
 // size in bytes
 void kmalloc_init_set_start(void *addr, unsigned max_nbytes);
 // UGH: fix this.  bad to not control the heap size.
+
 static inline void kmalloc_init(void) {
     unsigned long MB = 1024*1024;
     kmalloc_init_set_start((void*)MB, 64*MB);
 }
+
 static inline void kmalloc_init_mb(unsigned mb) {
     unsigned long MB = 1024*1024;
     kmalloc_init_set_start((void*)MB, mb*MB);

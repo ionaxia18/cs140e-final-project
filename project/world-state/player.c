@@ -61,7 +61,6 @@ pos_t pointing_block(world_t* w, player_t* p) {
     float dy = sin_deg(rot.pitch);
     float dz = cos_deg(rot.yaw) * cos_deg(rot.pitch);
     int16_t max_distance = 2;
-    float step_size = 0.1;
      trace("current difference is %d, %d, %d", (int16_t)(dx * 10), (int16_t)(dy * 10), (int16_t)(dz * 10));
     for (float i = 0; i < max_distance; i+= 0.05) {
         pos_t new_pos = (pos_t){(int16_t)(pos.x + dx * i), (int16_t)(pos.y + dy * i), (int16_t)(pos.z + dz * i)};

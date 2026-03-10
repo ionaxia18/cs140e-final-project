@@ -148,6 +148,10 @@ static inline void kmalloc_init(void) {
     kmalloc_init_set_start((void*)MB, 64*MB);
 }
 
+static inline void kmalloc_init_mb(unsigned mb) {
+    unsigned long MB = 1024*1024;
+    kmalloc_init_set_start((void*)MB, mb*MB);
+}
 // return pointer to the first free byte.  used for
 // bounds checking.
 void *kmalloc_heap_ptr(void);
