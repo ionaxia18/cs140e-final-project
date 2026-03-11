@@ -1,8 +1,8 @@
 #include "rpi.h"
 #include "../world-state/world.h"
 #include "../world-state/hashtable.h"
-#include "../../filesystems/pi-sd.h"
-#include "../../filesystems/fat32.h"
+#include "../filesystems/pi-sd.h"
+#include "../filesystems/fat32.h"
 #include "../pi-side/uart-helpers.h"
 
 

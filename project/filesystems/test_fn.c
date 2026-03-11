@@ -14,7 +14,7 @@ void notmain() {
     pi_dirent_t * directory = NULL;
     fat32_fs_t fs = initialize_fs(directory);
     myinit(heap_start, heap_size);
-    create_boot_file(0, directory, &fs);
+    // create_boot_file(0, directory, &fs);
     player_t *player = NULL;
     world_info_t info = {
         .seed = 0,
