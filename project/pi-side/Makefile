@@ -24,7 +24,7 @@ GPIO_OBJS  := $(patsubst ../gpio/%.c,objs/gpio/%.o,$(GPIO_SRCS))
 EXTERNAL_SRCS := ../filesystems/external-code/unicode-utf8.c ../filesystems/external-code/emmc.c
 EXTERNAL_OBJS := $(patsubst ../filesystems/external-code/%.c,objs/external-code/%.o,$(EXTERNAL_SRCS))
 
-FS_SRCS    := $(wildcard ../filesystems/*.c)
+FS_SRCS    := $(filter-out ../filesystems/test_fn.c,$(wildcard ../filesystems/*.c))
 FS_OBJS    := $(patsubst ../filesystems/%.c,objs/filesystems/%.o,$(FS_SRCS))
 
 BOOT_SRCS  := $(wildcard ../boot/*.c)

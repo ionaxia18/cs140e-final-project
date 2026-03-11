@@ -86,7 +86,7 @@ static uint32_t cluster_to_lba(fat32_fs_t *f, uint32_t cluster_num) {
   // sectors_per_cluster
   // unimplemented();
   unsigned lba = f->cluster_begin_lba + (cluster_num - 2) * f->sectors_per_cluster;
-  if (trace_p) trace("cluster %d to lba: %d\n", cluster_num, lba);
+  // if (trace_p) trace("cluster %d to lba: %d\n", cluster_num, lba);
   return lba;
 }
 

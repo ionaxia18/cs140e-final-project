@@ -19,8 +19,10 @@ char * filename0 = "SERVER0.BIN";
 char * filename1 = "SERVER1.BIN";
 
 file_t * save_game(world_t * world, player_t * player, uint32_t * out_size) {
+    trace("saving game\n");
     file_t * file_info = mymalloc(sizeof(file_t));
     memset(file_info, 0, sizeof(file_t));
+    trace("allocated file_info\n");
 
     file_info->player = *player;
     file_info->info = *world->info;
@@ -112,7 +114,7 @@ void load_game(file_t *file_info, struct world *world, player_t *player) {
         uart_put8(' ');
         uart_put_int(file_info->edit_blocks[i].block);
         uart_put8('\n');
-        trace("sent BLOCK %d %d %d %d\n", pos.x, pos.y, pos.z, file_info->edit_blocks[i].block);
+        trace("sent BLOCK %d %d %d %d\n", (int)pos.x, (int)pos.y, (int)pos.z, (int)file_info->edit_blocks[i].block);
     }
     uart_put_str("PLAYER ");
     uart_put_int(player->position.x);
@@ -196,7 +198,7 @@ int create_boot_file(uint32_t seed, pi_dirent_t * root, fat32_fs_t * fs) {
     trace("about to save\n");
     assert(fat32_write(fs, root, filename, &file_save));
     trace("saved game\n");
-    // myfree(result);
+    myfree(result);
     return 1;
 }
 

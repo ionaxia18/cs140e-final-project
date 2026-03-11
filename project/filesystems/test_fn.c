@@ -3,7 +3,7 @@
 #include "../world-state/world.h"
 #include "../heap/allocator.h"
 
-static char heap[64 * 1500];
+static char heap[131072];
 static size_t heap_size = sizeof(heap);
 static void* heap_start = heap;
 
