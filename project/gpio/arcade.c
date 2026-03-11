@@ -10,21 +10,23 @@ void arcade_init(void) {
 }
 // right = 24, left = 26, up = 20, down = 22
 
-void arcade_read(pos_t* pos) {
+pos_t arcade_read() {
     // dev_barrier();
     // trace("R=%d L=%d U=%d D=%d\n",gpio_read(PIN_RIGHT),gpio_read(PIN_LEFT),gpio_read(PIN_UP),gpio_read(PIN_DOWN));
+    pos_t displacement = {0, 0, 0};
     if (!gpio_read(PIN_LEFT)) {
-        pos->x += 1;
+        displacement.x += 1;
     }
     if (!gpio_read(PIN_RIGHT)) {
-        pos->x += -1;
+        displacement.x += -1;
     }
 
     if (!gpio_read(PIN_UP)) {
-        pos->z += 1;
+        displacement.z += 1;
     }
     if (!gpio_read(PIN_DOWN)) {
-        pos->z += -1;
+        displacement.z += -1;
     }
     dev_barrier();
+    return displacement;
 }

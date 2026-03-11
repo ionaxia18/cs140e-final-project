@@ -4,10 +4,27 @@
 #include "../heap/allocator.h"
 #include "../boot/world-gen.h"
 
-// static char heap[64 * 1500];
-// static size_t heap_size = sizeof(heap);
-// static void* heap_start = heap;
+void print_pos(pos_t p) {
+    trace("position at x=%d, y=%d, z=%d\n", p.x, p.y, p.z);
+}
+static char heap[64 * 1500];
+static size_t heap_size = sizeof(heap);
+static void* heap_start = heap;
+void world_print(world_t* w) {
+    trace("printing world now\n");
+    for (uint32_t i = 0; i < w->edits.cap; i++) {
+        // trace("i = %d", i);
+        world_entry_t* cur = w->edits.entries[i];
+        while (cur) {
+            world_entry_t* next = cur->next;
+            print_pos(cur->pos);
+            trace("block is %d", cur->block);
+            cur = next;
+        }
+    }
+    trace("edit size=%d\n", w->edits.size);
 
+}
 world_key_t world_make_key(pos_t p) {
     // Cast to int first to preserve sign
     int16_t ix = (int16_t)p.x;
@@ -98,7 +115,7 @@ block_t world_get_block(const world_t* w, pos_t p) {
         return BLOCK_AIR;
     }
     world_entry_t* entry = table_get_entry(&w->edits, p);
-    if (entry) {
+    if (entry != NULL) {
         return entry->block;
     } else {
         return world_base_block(w, p);

@@ -25,7 +25,7 @@ CFLAGS += -I$(LIBPI)/include -I$(LIBPI)/libc -I..
 all: $(PROGS) run
 
 %.bin: %.c $(WORLD_SRC) $(START) $(LPI) $(MEMMAP) Makefile
-	$(CC) $(CFLAGS) $(START) $< $(WORLD_SRC) $(KMALLOC) -T $(MEMMAP) $(LPI) -o $*.elf
+	$(CC) $(CFLAGS) $(START) $< $(WORLD_SRC) $(KMALLOC) -T $(MEMMAP) $(LPI) -lgcc -o $*.elf
 	$(ARM)-objcopy $*.elf -O binary $@
 	$(ARM)-objdump -D $*.elf > $*.list
 

@@ -31,7 +31,7 @@ int read_joystick(p_rot_t* rot) {
     rotation_increment(rot, x, y);
     dev_barrier();
     // trace("x: %d, y: %d, button: %d\n", x, y, sw < 512);
-    return sw;
+    return (sw < 512);
     // if (sw < 512) {
     //     gpio_set_on(LED_PIN);
     // } else {

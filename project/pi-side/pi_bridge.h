@@ -20,7 +20,7 @@ void uart_put_int(int val);
 void uart_put_str(char* str);
 
 void do_move(char c, player_t* player);
-void change_block(char c, world_t* w, player_t* player);
+void change_block(world_t* w, player_t* player, block_t block_selected);
 void update_rotation(player_t* player, uint16_t yaw, uint16_t pitch);
 world_t *initialize_server();
 

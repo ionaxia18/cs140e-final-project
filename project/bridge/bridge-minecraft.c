@@ -7,6 +7,7 @@
 #include <termios.h>
 #include <fcntl.h>
 #include "../constants.h"
+#include <netdb.h>
 #define PLUGIN_IP "127.0.0.1"
 #define PLUGIN_PORT 4711
 #define BAUDRATE    B115200
@@ -56,6 +57,38 @@ int connect_to_fruitjuice(const char * ip, int port) {
     return sock;
 }
 
+int connect_to_fruitjuice_ngrok(const char *host, int port) {
+    int sock;
+    struct addrinfo hints, *res;
+
+    char port_str[16];
+    snprintf(port_str, sizeof(port_str), "%d", port);
+
+    memset(&hints, 0, sizeof(hints));
+    hints.ai_family = AF_INET;       // IPv4
+    hints.ai_socktype = SOCK_STREAM; // TCP
+
+    if (getaddrinfo(host, port_str, &hints, &res) != 0) {
+        perror("getaddrinfo");
+        return -1;
+    }
+
+    sock = socket(res->ai_family, res->ai_socktype, res->ai_protocol);
+    if (sock < 0) {
+        freeaddrinfo(res);
+        return -1;
+    }
+
+    if (connect(sock, res->ai_addr, res->ai_addrlen) < 0) {
+        perror("connect");
+        close(sock);
+        freeaddrinfo(res);
+        return -1;
+    }
+
+    freeaddrinfo(res);
+    return sock;
+}
 void put_block(int sock, int x, int y, int z, char* block) {
     char buf[128];
     sprintf(buf, "world.setBlock(%d,%d,%d,%s)\n", x, y, z, block);
@@ -101,7 +134,8 @@ int fruit_juice_test(int sock) {
 }
 
 int main() {
-    int sock = connect_to_fruitjuice(PLUGIN_IP, PLUGIN_PORT);
+    // int sock = connect_to_fruitjuice(PLUGIN_IP, PLUGIN_PORT);
+    int sock = connect_to_fruitjuice_ngrok("4.tcp.us-cal-1.ngrok.io", 19838);
     if (sock < 0) {
         return 1;
     }
