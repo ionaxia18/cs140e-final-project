@@ -25,8 +25,7 @@ void world_print(world_t* w) {
 
 }
 world_key_t world_make_key(pos_t p) {
-    /* Cast to int first to preserve sign; (uint16_t)(negative_float) is undefined.
-     * Map -512..511 to 0..1023 for 10-bit chunks. */
+    // Cast to int first to preserve sign
     int16_t ix = (int16_t)p.x;
     int16_t iy = (int16_t)p.y;
     int16_t iz = (int16_t)p.z;
@@ -57,7 +56,6 @@ bool world_pos_is_valid(pos_t p) {
 
 // to do: this should somehow link to how the fruitjuice server is being started up
 world_t* world_create(const world_info_t* info) {
-    myinit(heap_start, heap_size);
     world_t* w = mymalloc(sizeof(world_t));
     if (!w) {
         trace("Failed to allocate memory for world");

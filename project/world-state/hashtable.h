@@ -6,7 +6,7 @@
 #include <stdbool.h>
 #include "rpi.h"
 #include "world.h"
-#include "world-gen.h"
+#include "../boot/world-gen.h"
 
 
 // Run hash function to get index of table. Returns -1 if table is full.

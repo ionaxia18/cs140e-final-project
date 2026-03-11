@@ -1,7 +1,7 @@
 #include "rpi.h"
 #include "world.h"
 #include "hashtable.h"
-#include "world-gen.h"
+#include "../boot/world-gen.h"
 #include "../heap/allocator.h"
 
 // Run hash function to get index of table. Returns -1 if table is full.
@@ -54,6 +54,7 @@ bool table_set_entry(world_table_t* t, block_t block, pos_t p) {
 
     // otherwise, allocate a new node and insert at bucket head.
     world_entry_t* node = mymalloc(sizeof(world_entry_t));
+    // trace("failed to allocate a new node\n");
     if (!node) {
         return false;
     }
