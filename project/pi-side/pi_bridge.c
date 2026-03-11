@@ -27,6 +27,9 @@ void do_move(player_t* player, pos_t new_pos) {
 void change_block(bool put, world_t* w, player_t* player, block_t block_selected) {
     // this depends on how we update the player rotation ?
     pos_t block_pos = pointing_block(w, player);
+    // if (world_get_block(w, block_pos) != BLOCK_AIR) {
+    //     return;
+    // }
     // trace("block_pos =x=%d, y=%d, z=%d", block_pos.x, block_pos.y, block_pos.z);
     if (put) {
         world_set_block(w, block_pos, block_selected);
@@ -106,10 +109,10 @@ void notmain() {
             last_rot = player.rotation;
         }
         block_selected = read_block();
-        if (block_selected && block_selected != 16) {
+        if (block_selected) {
             change_block(true, w, &player, block_selected);
         }
-        if (block_selected == 16) { 
+        if (place) { 
             world_destroy(w);
             return; 
         }
