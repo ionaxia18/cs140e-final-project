@@ -95,9 +95,9 @@ void put_block(int sock, int x, int y, int z, char* block) {
     send(sock, buf, strlen(buf), 0);
 }
 
-void move_player(int sock, int x, int y, int z) {
+void move_player(int sock, float x, float y, float z) {
     char buf[128];
-    sprintf(buf, "player.setTile(%d,%d,%d)\n", x, y, z);
+    sprintf(buf, "player.setPos(%f,%f,%f)\n", x, y, z);
     send(sock, buf, strlen(buf), 0);
 }        
 
