@@ -57,7 +57,7 @@ void do_move(player_t* player, pos_t new_pos) {
 
 world_t* initialize_server() {
     // initialize world seed
-    world_info_t info = {
+    static world_info_t info = {
         .seed = 0,
         .min = (pos_t){-32, -59, -32},
         .max = (pos_t){32, -44, 32},
@@ -106,7 +106,7 @@ void notmain() {
     world_print(w);
     while (1) {
         // pos_t new_pos = arcade_read(&player.position);
-        pos_t displacement = arcade_read(&player.position);
+        pos_t displacement = arcade_read();
         int place = read_joystick(&player.rotation);
         if (displacement.x || displacement.y || displacement.z) {
             new_pos = (pos_t){player.position.x + displacement.x, player.position.y + displacement.y, player.position.z + displacement.z};
