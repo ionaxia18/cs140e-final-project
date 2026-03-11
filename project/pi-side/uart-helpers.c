@@ -69,11 +69,9 @@ void send_set_block(pos_t p, block_t new_block) {
 void send_player_move(player_t* p) {
     uart_put_str("PLAYER ");
     uart_put_float(p->position.x);
-    uart_put_float(p->position.x);
     uart_put_str(" ");
     uart_put_float(p->position.y - 1.0f);
     uart_put_str(" ");
-    uart_put_float(p->position.z);
     uart_put_float(p->position.z);
     uart_put_str("\n");
 }

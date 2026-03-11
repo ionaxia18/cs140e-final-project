@@ -93,13 +93,17 @@ bool rotation_changed(p_rot_t cur, p_rot_t old) {
 }
 
 void notmain() {
-    player_t player;
+    player_t player = {
+        .player_id = 0,
+        .position = (pos_t){0, -60, 0},
+        .rotation = (p_rot_t){0, 0}
+    };
     myinit(heap_start, heap_size);
     world_t* w = initialize_server();
 
-    pi_dirent_t * directory = NULL;
-    fat32_fs_t fs = initialize_fs(directory);
-    get_current_state(0, directory, &fs, w, &player);
+    // pi_dirent_t * directory = NULL;
+    // fat32_fs_t fs = initialize_fs(directory);
+    // get_current_state(0, directory, &fs, w, &player);
 
     matrix_init();
     arcade_init();
@@ -158,5 +162,5 @@ void notmain() {
         delay_ms(50);
         uart_flush_tx();
     }
-    save_current_state(w, &player, 0, directory, &fs);
+    // save_current_state(w, &player, 0, directory, &fs);
 }
