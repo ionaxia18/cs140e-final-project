@@ -25,7 +25,7 @@ void do_move(player_t* player, pos_t new_pos) {
     send_player_move(player);
  }
 
- void change_block(bool put, world_t* w, player_t* player, block_t block_selected) {
+ void change_block(world_t* w, player_t* player, block_t block_selected) {
     pos_t hit;
     pos_t place;
 
@@ -38,16 +38,11 @@ void do_move(player_t* player, pos_t new_pos) {
           world_get_block(w, hit),
           (int)place.x, (int)place.y, (int)place.z);
 
-    if (put) {
-        if (!world_set_block(w, place, block_selected)) {
-            trace("world_set_block FAILED at (%d,%d,%d)\n",
-                  (int)place.x, (int)place.y, (int)place.z);
-        }
-        send_set_block(place, block_selected);
-    } else {
-        world_set_block(w, hit, BLOCK_AIR);
-        send_set_block(hit, BLOCK_AIR);
+    if (!world_set_block(w, place, block_selected)) {
+        trace("world_set_block FAILED at (%d,%d,%d)\n",
+                (int)place.x, (int)place.y, (int)place.z);
     }
+    send_set_block(place, block_selected);
 }
  
 // void update_rotation(player_t* player, uint16_t yaw, uint16_t pitch) {
@@ -64,8 +59,8 @@ world_t* initialize_server() {
     // initialize world seed
     world_info_t info = {
         .seed = 0,
-        .min = (pos_t){0, -60, 0},
-        .max = (pos_t){64, -44, 64},
+        .min = (pos_t){-32, -59, -32},
+        .max = (pos_t){32, -44, 32},
         .edits_cap = 2048,
         .pending_cap = 1024,
     };
@@ -100,8 +95,7 @@ void notmain() {
     uart_init();
     // outdated logic, needs to pull from gpio
     // begin pulling from uart to update world
-    pos_t last_pos = player.position;
-    
+    pos_t new_pos = player.position;
     p_rot_t last_rot = player.rotation;
     block_t block_selected = 0;
     block_t last_block = 0;  /* for debounce: only place on button press, not hold */
@@ -109,23 +103,33 @@ void notmain() {
     send_player_move(&player);
     send_player_rotation(&player);
     uart_flush_tx();
+    world_print(w);
     while (1) {
         // pos_t new_pos = arcade_read(&player.position);
-        arcade_read(&player.position);
+        pos_t displacement = arcade_read(&player.position);
         int place = read_joystick(&player.rotation);
-        if (position_changed(last_pos, player.position)) {
-            send_player_move(&player);
-            last_pos = player.position;
+        if (displacement.x || displacement.y || displacement.z) {
+            new_pos = (pos_t){player.position.x + displacement.x, player.position.y + displacement.y, player.position.z + displacement.z};
+            if (valid_player_move(w, &player, new_pos)) {
+                player.position = new_pos;
+                send_player_move(&player);
+
+            }
         }
+
         if (rotation_changed(player.rotation, last_rot)) {
             send_player_rotation(&player);
             last_rot = player.rotation;
         }
-        
+        if (place) {
+            block_selected = BLOCK_AIR;
+            change_block(w, &player, block_selected);
+        }
         block_selected = read_block();
         /* Only place on press (rising edge), not while held */
         if (block_selected && block_selected != 16 && !last_block) {
-            change_block(true, w, &player, block_selected);
+            // updates w as well
+            change_block(w, &player, block_selected);
         }
         if (block_selected == 16 && !last_block) {
             world_destroy(w);
