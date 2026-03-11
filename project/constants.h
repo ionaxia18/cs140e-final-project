@@ -1,6 +1,9 @@
+#ifndef CONSTANTS_H
+#define CONSTANTS_H
+
 // change to be ur pi port name, can find with 
 // ls /dev/cu.*
-#define PI_PORT "/dev/cu.usbserial-110"
+#define PI_PORT "/dev/cu.usbserial-210"
 static const float sin_q[91] = {
     0.000000000f,
     0.017452406f,
@@ -94,3 +97,5 @@ static const float sin_q[91] = {
     0.999847695f,
     1.000000000f
 };
+
+#endif /* CONSTANTS_H */

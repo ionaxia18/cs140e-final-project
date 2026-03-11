@@ -121,7 +121,7 @@ void load_game(file_t *file_info, struct world *world, player_t *player) {
     uart_put_str(" ");
     uart_put_int(player->position.z);
     uart_put_str("\n");
-    trace("sent PLAYER %d %d %d\n", player->position.x, player->position.y, player->position.z);
+    trace("sent PLAYER %d %d %d\n", (int)player->position.x, (int)player->position.y, (int)player->position.z);
 }
 
 fat32_fs_t initialize_fs(pi_dirent_t * directory) {
@@ -193,9 +193,10 @@ int create_boot_file(uint32_t seed, pi_dirent_t * root, fat32_fs_t * fs) {
         .n_data = out_size,
         .n_alloc = out_size
     };
+    trace("about to save\n");
     assert(fat32_write(fs, root, filename, &file_save));
-    myfree(result);
-    
+    trace("saved game\n");
+    // myfree(result);
     return 1;
 }
 

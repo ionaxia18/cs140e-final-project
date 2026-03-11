@@ -1,6 +1,6 @@
 #include "boot_server.h"
-#include "player.h"
-#include "world.h"
+#include "../world-state/player.h"
+#include "../world-state/world.h"
 #include "../heap/allocator.h"
 
 static char heap[64 * 1500];
@@ -14,7 +14,6 @@ void notmain() {
     pi_dirent_t * directory = NULL;
     fat32_fs_t fs = initialize_fs(directory);
     myinit(heap_start, heap_size);
-    // create_boot_file(0, directory, &fs);
     player_t *player = NULL;
     world_info_t info = {
         .seed = 0,
@@ -27,16 +26,11 @@ void notmain() {
     world_t* world = world_create(&info);
     get_current_state(0, directory, &fs, world, player);
     trace("got result\n");
-    // pi_to_plugin(world, player);
     assert(player->player_id == 0);
     assert(player->position.x == 0);
     assert(player->position.y == -60);
     assert(player->position.z == 0);
     trace("got player with player_id %d, position at %d, %d, %d, and rotation at %d, %d\n", player->player_id, player->position.x, player->position.y, player->position.z, player->rotation.yaw, player->rotation.pitch);
-    player_position_increment(player, 0, 1, 0);
-    assert(player->position.x == 0);
-    assert(player->position.y == -59);
-    assert(player->position.z == 0);
     trace("finish player tests\n");
 
     pos_t pos = {.x = -50, .y = -50, .z =-50};

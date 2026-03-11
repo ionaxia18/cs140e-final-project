@@ -315,8 +315,10 @@ static void write_fat_to_disk(fat32_fs_t *fs) {
   // if the FATs are out of sync, but most OSes just read the first one without
   // complaining.
   if (trace_p) trace("syncing FAT\n");
+  trace("syncing FAT: %u sectors\n", fs->n_entries);
   // unimplemented();
   pi_sd_write(fs->fat, fs->fat_begin_lba, fs->n_entries);
+  trace("FAT sync done\n");
 }
 
 // Given the starting cluster index, write the data in `data` over the

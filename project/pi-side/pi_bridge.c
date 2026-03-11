@@ -4,7 +4,7 @@
 #include "../constants.h"
 // #include "../world-state/world.h"
 #include "../world-state/player.h"
-#include "../world-state/world-gen.h"
+#include "../boot/world-gen.h"
 #include "../world-state/pending.h"
 #include "../world-state/hashtable.h"
 
@@ -28,16 +28,10 @@ static void* heap_start = heap;
 void do_move(player_t* player, pos_t new_pos) {
     if (!world_pos_is_valid(new_pos)) {
         panic("invalid move to position %d %d %d", new_pos.x, new_pos.y, new_pos.z);
-
-void do_move(player_t* player, pos_t new_pos) {
-    if (!world_pos_is_valid(new_pos)) {
-        panic("invalid move to position %d %d %d", new_pos.x, new_pos.y, new_pos.z);
     } 
     player->position = new_pos;
     send_player_move(player);
-    player->position = new_pos;
-    send_player_move(player);
- }
+}
 
  void change_block(world_t* w, player_t* player, block_t block_selected) {
     pos_t hit;
@@ -99,12 +93,14 @@ bool rotation_changed(p_rot_t cur, p_rot_t old) {
 }
 
 void notmain() {
-    player_t player = {.player_id = 0,
-        .position = (pos_t) {0, -59, 0},
-        .rotation = (p_rot_t) {0, 0}
-    };
-
+    player_t player;
+    myinit(heap_start, heap_size);
     world_t* w = initialize_server();
+
+    pi_dirent_t * directory = NULL;
+    fat32_fs_t fs = initialize_fs(directory);
+    get_current_state(0, directory, &fs, w, &player);
+
     matrix_init();
     arcade_init();
     joystick_init();
@@ -163,6 +159,4 @@ void notmain() {
         uart_flush_tx();
     }
     save_current_state(w, &player, 0, directory, &fs);
-
-    }
 }

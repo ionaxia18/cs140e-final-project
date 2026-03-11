@@ -3,8 +3,6 @@
 #include "../world-state/hashtable.h"
 #include "../filesystems/pi-sd.h"
 #include "../filesystems/fat32.h"
-#include "../pi-side/uart-helpers.h"
-
 
 block_t world_base_block(const world_t* w, pos_t p);
 
