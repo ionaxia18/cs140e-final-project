@@ -109,10 +109,10 @@ void notmain() {
             last_rot = player.rotation;
         }
         block_selected = read_block();
-        if (block_selected) {
+        if (block_selected && block_selected != 16) {
             change_block(true, w, &player, block_selected);
         }
-        if (place) { 
+        if (block_selected == 16) { 
             world_destroy(w);
             return; 
         }
