@@ -95,7 +95,7 @@ bool rotation_changed(p_rot_t cur, p_rot_t old) {
 void notmain() {
     player_t player = {
         .player_id = 0,
-        .position = (pos_t){0, -60, 0},
+        .position = (pos_t){0, -59, 0},
         .rotation = (p_rot_t){0, 0}
     };
     myinit(heap_start, heap_size);
@@ -112,6 +112,7 @@ void notmain() {
     // outdated logic, needs to pull from gpio
     // begin pulling from uart to update world
     pos_t new_pos = player.position;
+    pos_t fall_pos = player.position;
     p_rot_t last_rot = player.rotation;
     block_t block_selected = 0;
     block_t last_block = 0;  /* for debounce: only place on button press, not hold */
@@ -127,10 +128,22 @@ void notmain() {
         int place = read_joystick(&player.rotation);
         if (displacement.x || displacement.y || displacement.z) {
             new_pos = player_next_move(&player, displacement);
-            // new_pos = (pos_t){player.position.x + displacement.x, player.position.y + displacement.y, player.position.z + displacement.z};
+            fall_pos = new_pos;
+            fall_pos.y -= 1;
+            // check if player can fall down
+            if (valid_player_move(w, &player, fall_pos) && world_get_block(w, fall_pos) == BLOCK_AIR) {
+                new_pos.y -= 1;
+            }
             if (valid_player_move(w, &player, new_pos)) {
                 player.position = new_pos;
                 send_player_move(&player);
+            } else {
+                // check if player can jump onto whatever block is where they're trying to move
+                new_pos.y += 1;
+                if (valid_player_move(w, &player, new_pos)) {
+                    player.position = new_pos;
+                    send_player_move(&player);
+                }
             }
         }
 
