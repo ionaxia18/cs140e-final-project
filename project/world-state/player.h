@@ -27,8 +27,8 @@ int16_t floorf_custom(float x);
 typedef struct player player_t;
 
 bool player_position_set(player_t* p, float x, float y, float z);
-
 bool player_position_increment(player_t* p, float dx, float dy, float dz);
+pos_t player_next_move(player_t* p, pos_t displacement);
 bool player_rotation_increment(player_t* player, int16_t yaw, int16_t pitch);
 bool rotation_increment(p_rot_t* rot, int16_t yaw, int16_t pitch); 
 bool player_rotation_set(player_t* p, int16_t x, int16_t y);

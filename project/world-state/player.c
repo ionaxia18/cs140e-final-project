@@ -150,13 +150,29 @@ bool raycast_block(world_t *w, player_t *p, pos_t *hit_block, pos_t *place_block
             *place_block = block_pos(last_air_x, last_air_y, last_air_z);
             return true;
         }
-
         last_air_x = x;
         last_air_y = y;
         last_air_z = z;
     }
 
     return false;
+}
+
+
+pos_t player_next_move(player_t* p, pos_t displacement) {
+    float x = p->position.x;
+    float y = p->position.y;
+    float z = p->position.z;
+
+    float dx = -sin_deg(p->rotation.yaw) * cos_deg(p->rotation.pitch);
+    float dz =  cos_deg(p->rotation.yaw) * cos_deg(p->rotation.pitch);
+
+    int step_x = (dx > 0.0f) ? 1 : (dx < 0.0f ? -1 : 0);
+    int step_z = (dz > 0.0f) ? 1 : (dz < 0.0f ? -1 : 0);
+
+    x += step_x * displacement.x;
+    z += step_z * displacement.z;
+    return (pos_t){x, y, z};
 }
 
 bool valid_player_move(world_t *w, player_t* player, pos_t new_pos) {
