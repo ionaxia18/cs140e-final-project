@@ -5,6 +5,7 @@
 #include "../world-state/player.h"
 void uart_put_int(int val);
 
+void uart_put_float(float f);
 void uart_put_str(char* str);
 
 void send_set_block(pos_t p, block_t new_block);

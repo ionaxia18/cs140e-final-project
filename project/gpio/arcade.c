@@ -2,7 +2,7 @@
 
 void arcade_init(void) {
     // dev_barrier();
-    for (int i =20; i <= 24; i+=2) {
+    for (int i = 20; i <= 26; i+=2) {
         gpio_set_input(i);
         gpio_set_pullup(i);
     }

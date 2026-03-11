@@ -9,9 +9,11 @@
 #include "../boot/world-gen.h"
 #include "../world-state/pending.h"
 #include "../world-state/hashtable.h"
+
 #include "../gpio/arcade.h"
 #include "../gpio/joystick.h"
 #include "../gpio/matrix.h"
+
 #include "uart-helpers.h"
 #include "../filesystems/boot_server.h"
 #include "../heap/allocator.h"
@@ -21,53 +23,29 @@ static size_t heap_size = sizeof(heap);
 static void* heap_start = heap;
 #define BAUDRATE B115200
 // takes in a character move, will move the player on pi side and return new coordinates
-void do_move(char c, player_t* player) {
-    if (c == 'w') {
-        player_position_increment(player, 0, 1, 0);
-    } else if (c == 'a') {
-        player_position_increment(player, -1, 0, 0);
-    } else if (c == 's') {
-        player_position_increment(player, 0, -1, 0);
-    } else if (c == 'd') {
-        player_position_increment(player, 1, 0, 0);
-    }
 
-    if (!world_pos_is_valid(player->position)) {
-        panic("invalid move to position %d %d %d", player->position.x, player->position.y, player->position.z);
+void do_move(player_t* player, pos_t new_pos) {
+    if (!world_pos_is_valid(new_pos)) {
+        panic("invalid move to position %d %d %d", new_pos.x, new_pos.y, new_pos.z);
     } 
-    
-    uart_put_str("PLAYER ");
-    uart_put_int(player->position.x);
-    uart_put_str(" ");
-    uart_put_int(player->position.y);
-    uart_put_str(" ");
-    uart_put_int(player->position.z);
-    uart_put_str("\r\n");
-    uart_put_str("\r\n");
+    player->position = new_pos;
+    send_player_move(player);
  }
 
-void change_block(char c, world_t* w, player_t* player) {
+void change_block(bool put, world_t* w, player_t* player, block_t block_selected) {
     // this depends on how we update the player rotation ?
     pos_t block_pos = pointing_block(w, player);
-    block_t block = BLOCK_AIR;
-    if (c == 'p') {
-        world_set_block(w, block_pos, BLOCK_STONE);
-        block = BLOCK_STONE;
+    // if (world_get_block(w, block_pos) != BLOCK_AIR) {
+    //     return;
+    // }
+    // trace("block_pos =x=%d, y=%d, z=%d", block_pos.x, block_pos.y, block_pos.z);
+    if (put) {
+        world_set_block(w, block_pos, block_selected);
     }
-    else if (c == 'r') {
-        world_set_block(w, block_pos, BLOCK_AIR);
+    else {
         world_set_block(w, block_pos, BLOCK_AIR);
     }
-    uart_put_str("BLOCK");
-    uart_put8(' ');
-    uart_put_int(block_pos.x);
-    uart_put8(' ');
-    uart_put_int(block_pos.y);
-    uart_put8(' ');
-    uart_put_int(block_pos.z);
-    uart_put8(' ');
-    uart_put_int(block);
-    uart_put8('\n');
+    send_set_block(block_pos, block_selected);
 }
  
 // void update_rotation(player_t* player, uint16_t yaw, uint16_t pitch) {
@@ -86,7 +64,7 @@ world_t* initialize_server() {
         .seed = 0,
         .min = (pos_t){0, -60, 0},
         .max = (pos_t){16, -44, 16},
-        .edits_cap = 4096,
+        .edits_cap = 2048,
         .pending_cap = 1024,
     };
 
@@ -119,6 +97,7 @@ void notmain() {
     player_t player;
     get_current_state(0, directory, &fs, w, &player);
 
+    matrix_init();
     arcade_init();
     joystick_init();
     uart_init();
@@ -126,45 +105,37 @@ void notmain() {
     // begin pulling from uart to update world
     pos_t last_pos = player.position;
     p_rot_t last_rot = player.rotation;
+    block_t block_selected = 0;
     trace("Server initialized\n");
     while (1) {
+        // pos_t new_pos = arcade_read(&player.position);
         arcade_read(&player.position);
         int place = read_joystick(&player.rotation);
-        if (position_changed(player.position, last_pos)) {
+        if (position_changed(last_pos, player.position)) {
             uart_put_str("   ");
+            // do_move(&player, last_pos);
             send_player_move(&player);
             last_pos = player.position;
         }
         if (rotation_changed(player.rotation, last_rot)) {
-            uart_put_str("   ");
             send_player_rotation(&player);
             last_rot = player.rotation;
         }
-        if (!place) {
-            uart_put_str("   ");
-            change_block('p', w, &player);
+        block_selected = read_block();
+        if (block_selected) {
+            change_block(true, w, &player, block_selected);
         }
-        delay_ms(300);
-        uart_flush_tx();
-
-        // if (uart_has_data()) {
-        //     char c = (char) uart_get8();
-        //     if (c == 'w' || c == 'a' || c == 's' || c == 'd') {
-        //         do_move(c, &player);
-        //     }
-        //     else if (c == 'p' || c == 'r') {
-        //         change_block(c, w, &player);
-        //     } else if (c == 'm') {
-        //         while (!uart_has_data()) {}
-        //         uint32_t dx = uart_get8();
-        //         while (!uart_has_data()) {}
-        //         uint32_t dy = uart_get8();
-        //         update_rotation(&player, dx, dy);
-        //     } else if (c == 'q') {
-        //         uart_flush_tx();
-        //         return;
-        //     }
+        if (place) { 
+            world_destroy(w);
+            return; 
+        }
+        // this is placing with joystick, replace with placing with matrix
+        // if (!place) {
+        //     uart_put_str("   ");
+        //     change_block('p', w, &player);
         // }
+        delay_ms(100);
+        uart_flush_tx();
     }
     save_current_state(w, &player, 0, directory, &fs);
 

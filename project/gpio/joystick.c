@@ -25,8 +25,10 @@ int read_joystick(p_rot_t* rot) {
     if (x > -60 && x < 60) x = 0;
     if (y > -60 && y < 60) y = 0;
     int sw = read_channel(spi, 0);
-    rot->pitch += x / 85;
-    rot->yaw += -y / 125;
+    // need to normalize so it goes back to 0 when it reaches a certain value
+    x /= 85;
+    y /= -125;
+    rotation_increment(rot, x, y);
     dev_barrier();
     // trace("x: %d, y: %d, button: %d\n", x, y, sw < 512);
     return sw;
