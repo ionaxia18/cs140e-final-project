@@ -55,10 +55,9 @@ void uart_put_str(char* str) {
 
 void send_set_block(pos_t p, block_t new_block) {
     uart_put_str("BLOCK ");
-    uart_put8(' ');
     uart_put_float(p.x);
     uart_put8(' ');
-    uart_put_float(p.y);
+    uart_put_float(p.y - 1.0f);
     uart_put8(' ');
     uart_put_float(p.z);
     uart_put8(' ');
@@ -71,7 +70,7 @@ void send_player_move(player_t* p) {
     uart_put_str("PLAYER ");
     uart_put_float(p->position.x);
     uart_put_str(" ");
-    uart_put_float(p->position.y);
+    uart_put_float(p->position.y - 1.0f);
     uart_put_str(" ");
     uart_put_float(p->position.z);
     uart_put_str("\n");

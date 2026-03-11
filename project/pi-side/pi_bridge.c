@@ -14,6 +14,7 @@
 
 #include "uart-helpers.h"
 #define BAUDRATE B115200
+
 // takes in a character move, will move the player on pi side and return new coordinates
 
 void do_move(player_t* player, pos_t new_pos) {
@@ -24,20 +25,29 @@ void do_move(player_t* player, pos_t new_pos) {
     send_player_move(player);
  }
 
-void change_block(bool put, world_t* w, player_t* player, block_t block_selected) {
-    // this depends on how we update the player rotation ?
-    pos_t block_pos = pointing_block(w, player);
-    // if (world_get_block(w, block_pos) != BLOCK_AIR) {
-    //     return;
-    // }
-    // trace("block_pos =x=%d, y=%d, z=%d", block_pos.x, block_pos.y, block_pos.z);
+ void change_block(bool put, world_t* w, player_t* player, block_t block_selected) {
+    pos_t hit;
+    pos_t place;
+
+    if (!raycast_block(w, player, &hit, &place)) {
+        return;
+    }
+
+    trace("hit=(%d,%d,%d) block=%d place=(%d,%d,%d)\n",
+          (int)hit.x, (int)hit.y, (int)hit.z,
+          world_get_block(w, hit),
+          (int)place.x, (int)place.y, (int)place.z);
+
     if (put) {
-        world_set_block(w, block_pos, block_selected);
+        if (!world_set_block(w, place, block_selected)) {
+            trace("world_set_block FAILED at (%d,%d,%d)\n",
+                  (int)place.x, (int)place.y, (int)place.z);
+        }
+        send_set_block(place, block_selected);
+    } else {
+        world_set_block(w, hit, BLOCK_AIR);
+        send_set_block(hit, BLOCK_AIR);
     }
-    else {
-        world_set_block(w, block_pos, BLOCK_AIR);
-    }
-    send_set_block(block_pos, block_selected);
 }
  
 // void update_rotation(player_t* player, uint16_t yaw, uint16_t pitch) {
@@ -55,7 +65,7 @@ world_t* initialize_server() {
     world_info_t info = {
         .seed = 0,
         .min = (pos_t){0, -60, 0},
-        .max = (pos_t){16, -44, 16},
+        .max = (pos_t){64, -44, 64},
         .edits_cap = 2048,
         .pending_cap = 1024,
     };
@@ -79,7 +89,7 @@ bool rotation_changed(p_rot_t cur, p_rot_t old) {
 
 void notmain() {
     player_t player = {.player_id = 0,
-        .position = (pos_t) {0, -60, 0},
+        .position = (pos_t) {0, -59, 0},
         .rotation = (p_rot_t) {0, 0}
     };
 
@@ -91,16 +101,19 @@ void notmain() {
     // outdated logic, needs to pull from gpio
     // begin pulling from uart to update world
     pos_t last_pos = player.position;
+    
     p_rot_t last_rot = player.rotation;
     block_t block_selected = 0;
+    block_t last_block = 0;  /* for debounce: only place on button press, not hold */
     trace("Server initialized\n");
+    send_player_move(&player);
+    send_player_rotation(&player);
+    uart_flush_tx();
     while (1) {
         // pos_t new_pos = arcade_read(&player.position);
         arcade_read(&player.position);
         int place = read_joystick(&player.rotation);
         if (position_changed(last_pos, player.position)) {
-            uart_put_str("   ");
-            // do_move(&player, last_pos);
             send_player_move(&player);
             last_pos = player.position;
         }
@@ -108,20 +121,23 @@ void notmain() {
             send_player_rotation(&player);
             last_rot = player.rotation;
         }
+        
         block_selected = read_block();
-        if (block_selected && block_selected != 16) {
+        /* Only place on press (rising edge), not while held */
+        if (block_selected && block_selected != 16 && !last_block) {
             change_block(true, w, &player, block_selected);
         }
-        if (block_selected == 16) { 
+        if (block_selected == 16 && !last_block) {
             world_destroy(w);
-            return; 
+            return;
         }
+        last_block = block_selected;
         // this is placing with joystick, replace with placing with matrix
         // if (!place) {
         //     uart_put_str("   ");
         //     change_block('p', w, &player);
         // }
-        delay_ms(100);
+        delay_ms(50);
         uart_flush_tx();
     }
 }

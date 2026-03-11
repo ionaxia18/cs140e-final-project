@@ -8,9 +8,15 @@ static size_t heap_size = sizeof(heap);
 static void* heap_start = heap;
 
 world_key_t world_make_key(pos_t p) {
-    uint32_t mask = 0x3ff; 
-    // mask to get rid of sign bit
-    return (((uint16_t)p.x & mask) << 20) | (((uint16_t)p.y & mask) << 10) | ((uint16_t)p.z & mask);
+    /* Cast to int first to preserve sign; (uint16_t)(negative_float) is undefined.
+     * Map -512..511 to 0..1023 for 10-bit chunks. */
+    int16_t ix = (int16_t)p.x;
+    int16_t iy = (int16_t)p.y;
+    int16_t iz = (int16_t)p.z;
+    uint32_t ux = (uint32_t)(ix + 512) & 0x3ff;
+    uint32_t uy = (uint32_t)(iy + 512) & 0x3ff;
+    uint32_t uz = (uint32_t)(iz + 512) & 0x3ff;
+    return (ux << 20) | (uy << 10) | uz;
 }
 
 pos_t world_read_key(world_key_t k){

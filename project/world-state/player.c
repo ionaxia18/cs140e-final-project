@@ -1,111 +1,147 @@
 #include "player.h"
 #include "world.h"
 #include "../pi-side/uart-helpers.h"
+#include "../constants.h"
+
+static int wrap_deg(int deg) {
+    while (deg < 0) deg += 360;
+    while (deg >= 360) deg -= 360;
+    return deg;
+}
 
 float sin_deg(int deg) {
-    while (deg > 180.0) deg -= 360.0;
-    while (deg < -180.0) deg += 360.0;
+    deg = wrap_deg(deg);
 
-    float x = deg * 3.14159265f / 180.0f;
-
-    float x2 = x * x;
-    return x * (1 - x2/6 + x2*x2/120);
+    if (deg <= 90) return sin_q[deg];
+    if (deg <= 180) return sin_q[180 - deg];
+    if (deg <= 270) return -sin_q[deg - 180];
+    return -sin_q[360 - deg];
 }
 
 float cos_deg(int deg) {
-    return sin_deg(deg + 90.0f);
+    return sin_deg(deg + 90);
 }
 
-int16_t floorf_custom(float x) {
+static int16_t floorf_custom(float x) {
     int16_t i = (int16_t)x;
     if (x < i) i--;
     return i;
 }
 
-bool player_position_set(player_t* p, float x, float y, float z) {
-    pos_t new_pos = (pos_t){x, y, z};
-    if (!world_pos_is_valid(new_pos)) { return false; }
-    p->position = new_pos;
-    return true;
+static float absf_custom(float x) {
+    return x < 0.0f ? -x : x;
 }
 
-bool player_rotation_set(player_t* p, int16_t yaw, int16_t pitch) {
-    p_rot_t new_rot = (p_rot_t){yaw, pitch};
-    p->rotation = new_rot;
-    return true;
+static pos_t block_pos(int x, int y, int z) {
+    return (pos_t){(float)x, (float)y, (float)z};
 }
 
-bool player_rotation_increment(player_t* player, int16_t yaw, int16_t pitch) {
-    return rotation_increment(&player->rotation, yaw, pitch);
-}
+
 bool rotation_increment(p_rot_t* rot, int16_t yaw, int16_t pitch) {
-    int16_t new_yaw = rot->yaw + yaw;
+    int16_t new_yaw = wrap_deg(rot->yaw + yaw);
     int16_t new_pitch = rot->pitch + pitch;
-    if (new_yaw > 360) {
-        new_yaw -= 360;
-    }
-    if (new_yaw < 0) {
-        new_yaw += 360;
-    }
+
     if (new_pitch > 90) {
         new_pitch = 90;
     }
     if (new_pitch < -90) {
         new_pitch = -90;
     }
+
     rot->yaw = new_yaw;
     rot->pitch = new_pitch;
     return true;
 }
-bool player_position_increment(player_t* p, float dx, float dy, float dz) {
-    pos_t new_pos = (pos_t){p->position.x + dx, p->position.y + dy, p->position.z + dz};
-    p->position = new_pos;
-    return true;
-}
+/*
+ * Returns:
+ *   hit_block   = solid block the ray actually hit
+ *   place_block = air block just before that solid block
+ *
+ * IMPORTANT:
+ * If player.position is already the camera position, use eye_height = 0.0f.
+ * If player.position is feet position, use eye_height = 1.62f.
+ */
+bool raycast_block(world_t *w, player_t *p, pos_t *hit_block, pos_t *place_block) {
+    const float max_dist = 5.0f;
 
+    const float eye_height = 1.62f;
 
-pos_t pointing_block(world_t* w, player_t* p) {
-    pos_t pos = p->position;
-    // pos_t new_pos = pos;
-    p_rot_t rot = p->rotation;
-    float start_x = pos.x + 0.5f;
-    float start_y = pos.y + 1.6f;
-    float start_z = pos.z + 0.5f;
-    float dx = -sin_deg(rot.yaw) * cos_deg(rot.pitch);
-    float dy = -sin_deg(rot.pitch);
-    float dz = cos_deg(rot.yaw) * cos_deg(rot.pitch);
-    int16_t max_distance = 2;
-    pos_t last_pos = (pos_t){
-        floorf_custom(start_x),
-        floorf_custom(start_y),
-        floorf_custom(start_z)
-    };
-    pos_t prev_checked = last_pos;
-    // float step_size = 0.1;
-    // pos_t last_pos = pos;
-    //  trace("current difference is %d, %d, %d", (int16_t)(dx * 10), (int16_t)(dy * 10), (int16_t)(dz * 10));
-    
-    for (float i = 0; i < max_distance; i+= 0.05) {
-        pos_t new_pos = (pos_t){
-            floorf_custom(start_x + dx * i),
-            floorf_custom(start_y + dy * i),
-            floorf_custom(start_z + dz * i)
-        };
-        if (new_pos.x == prev_checked.x &&
-            new_pos.y == prev_checked.y &&
-            new_pos.z == prev_checked.z)
-            continue;
-        prev_checked = new_pos;
+    float ox = p->position.x;
+    float oy = p->position.y + eye_height;
+    float oz = p->position.z;
 
-        if (!world_pos_is_valid(new_pos)) {
-            return last_pos;
+    float dx = -sin_deg(p->rotation.yaw) * cos_deg(p->rotation.pitch);
+    float dy = -sin_deg(p->rotation.pitch);
+    float dz =  cos_deg(p->rotation.yaw) * cos_deg(p->rotation.pitch);
+
+    int x = floorf_custom(ox);
+    int y = floorf_custom(oy);
+    int z = floorf_custom(oz);
+
+    int step_x = (dx > 0.0f) ? 1 : (dx < 0.0f ? -1 : 0);
+    int step_y = (dy > 0.0f) ? 1 : (dy < 0.0f ? -1 : 0);
+    int step_z = (dz > 0.0f) ? 1 : (dz < 0.0f ? -1 : 0);
+
+    const float BIG = 1e30f;
+
+    float t_delta_x = (step_x != 0) ? absf_custom(1.0f / dx) : BIG;
+    float t_delta_y = (step_y != 0) ? absf_custom(1.0f / dy) : BIG;
+    float t_delta_z = (step_z != 0) ? absf_custom(1.0f / dz) : BIG;
+
+    float t_max_x = BIG;
+    float t_max_y = BIG;
+    float t_max_z = BIG;
+
+    if (step_x > 0) t_max_x = ((float)(x + 1) - ox) / dx;
+    else if (step_x < 0) t_max_x = (ox - (float)x) / (-dx);
+
+    if (step_y > 0) t_max_y = ((float)(y + 1) - oy) / dy;
+    else if (step_y < 0) t_max_y = (oy - (float)y) / (-dy);
+
+    if (step_z > 0) t_max_z = ((float)(z + 1) - oz) / dz;
+    else if (step_z < 0) t_max_z = (oz - (float)z) / (-dz);
+
+    int last_air_x = x;
+    int last_air_y = y;
+    int last_air_z = z;
+
+    float t = 0.0f;
+
+    while (t <= max_dist) {
+        if (t_max_x < t_max_y && t_max_x < t_max_z) {
+            x += step_x;
+            t = t_max_x;
+            t_max_x += t_delta_x;
+        } else if (t_max_y < t_max_z) {
+            y += step_y;
+            t = t_max_y;
+            t_max_y += t_delta_y;
+        } else {
+            z += step_z;
+            t = t_max_z;
+            t_max_z += t_delta_z;
         }
-        if (world_get_block(w, new_pos) != BLOCK_AIR) {
-            return last_pos;
+
+        if (t > max_dist) {
+            return false;
         }
 
-        last_pos = new_pos;
+        pos_t cur = block_pos(x, y, z);
+
+        if (!world_pos_is_valid(cur)) {
+            return false;
+        }
+
+        if (world_get_block(w, cur) != BLOCK_AIR) {
+            *hit_block = cur;
+            *place_block = block_pos(last_air_x, last_air_y, last_air_z);
+            return true;
+        }
+
+        last_air_x = x;
+        last_air_y = y;
+        last_air_z = z;
     }
 
-    return last_pos;
+    return false;
 }

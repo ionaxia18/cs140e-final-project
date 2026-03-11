@@ -42,9 +42,9 @@ void notmain(void) {
         for (int y = w->info->min.y; y < w->info->max.y; y++) {
             for (int z = w->info->min.z; z < w->info->max.z; z++) {
                 pos_t p = (pos_t){x, y, z};
-                bool is_step2 = ((x - w->info->min.x) % 2 == 0) &&
-                                ((y - w->info->min.y) % 2 == 0) &&
-                                ((z - w->info->min.z) % 2 == 0);
+                bool is_step2 = ((int)(x - w->info->min.x) % 2 == 0) &&
+                                ((int)(y - w->info->min.y) % 2 == 0) &&
+                                ((int)(z - w->info->min.z) % 2 == 0);
                 world_entry_t* e = table_get_entry(&w->edits, p);
                 if (is_step2) {
                     assert(e != NULL && e->block == BLOCK_GRASS);

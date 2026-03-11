@@ -11,9 +11,9 @@ void fill_table(world_t* w, world_entry_t* expected_entries) {
         for (int y = w->info->min.y; y < w->info->max.y; y += 2) {
             for (int z = w->info->min.z; z < w->info->max.z; z += 2) {
                 pos_t p = (pos_t){x, y, z};
-                bool is_step4 = (x - w->info->min.x) % 4 == 0
-                                && (y - w->info->min.y) % 4 == 0
-                                && (z - w->info->min.z) % 4 == 0;
+                bool is_step4 = (int)(x - w->info->min.x) % 4 == 0
+                                 && (int)(y - w->info->min.y) % 4 == 0
+                                 && (int)(z - w->info->min.z) % 4 == 0;
                 block_t block = is_step4 ? BLOCK_DIRT : BLOCK_GRASS;
                 expected_entries[count++] = (world_entry_t){block, p, true, NULL};
             }
