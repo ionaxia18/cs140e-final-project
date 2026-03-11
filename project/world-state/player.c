@@ -167,11 +167,8 @@ pos_t player_next_move(player_t* p, pos_t displacement) {
     float dx = -sin_deg(p->rotation.yaw) * cos_deg(p->rotation.pitch);
     float dz =  cos_deg(p->rotation.yaw) * cos_deg(p->rotation.pitch);
 
-    int step_x = (dx > 0.0f) ? 1 : (dx < 0.0f ? -1 : 0);
-    int step_z = (dz > 0.0f) ? 1 : (dz < 0.0f ? -1 : 0);
-
-    x += step_x * displacement.x;
-    z += step_z * displacement.z;
+    x += displacement.x * dx;
+    z += displacement.z * dz;
     return (pos_t){x, y, z};
 }
 
