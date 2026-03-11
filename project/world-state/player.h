@@ -22,7 +22,7 @@ struct player {
 float sin_deg(int deg);
 float cos_deg(int deg);
 
-// int16_t floorf_custom(float x);
+int16_t floorf_custom(float x);
 
 typedef struct player player_t;
 

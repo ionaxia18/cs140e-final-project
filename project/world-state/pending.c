@@ -16,10 +16,10 @@ bool pending_add(pending_table_t* pending, world_entry_t entry) {
 
 // Flush pending buffer: returns T if successful, F if failed
 bool pending_flush(pending_table_t* pending) {
-    for (uint32_t i = 0; i < pending->size; i++) {
-        world_entry_t entry = pending->entries[pending->indices[i]];
-        // send uart message to bridge program
-    }
+    // for (uint32_t i = 0; i < pending->size; i++) {
+    //     world_entry_t entry = pending->entries[pending->indices[i]];
+    //     // send uart message to bridge program
+    // }
     pending->size = 0;
     memset(pending->entries, 0, pending->cap * sizeof(world_entry_t));
     memset(pending->indices, 0, pending->cap * sizeof(uint32_t));

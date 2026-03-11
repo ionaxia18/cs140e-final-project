@@ -8,11 +8,19 @@
 #include "../world-state/pending.h"
 #include "../world-state/hashtable.h"
 
+
 #include "../gpio/arcade.h"
 #include "../gpio/joystick.h"
 #include "../gpio/matrix.h"
 
+
 #include "uart-helpers.h"
+#include "../filesystems/boot_server.h"
+#include "../heap/allocator.h"
+
+static char heap[64 * 1500];
+static size_t heap_size = sizeof(heap);
+static void* heap_start = heap;
 #define BAUDRATE B115200
 
 // takes in a character move, will move the player on pi side and return new coordinates
@@ -20,7 +28,13 @@
 void do_move(player_t* player, pos_t new_pos) {
     if (!world_pos_is_valid(new_pos)) {
         panic("invalid move to position %d %d %d", new_pos.x, new_pos.y, new_pos.z);
+
+void do_move(player_t* player, pos_t new_pos) {
+    if (!world_pos_is_valid(new_pos)) {
+        panic("invalid move to position %d %d %d", new_pos.x, new_pos.y, new_pos.z);
     } 
+    player->position = new_pos;
+    send_player_move(player);
     player->position = new_pos;
     send_player_move(player);
  }
@@ -109,7 +123,7 @@ void notmain() {
     world_print(w);
     while (1) {
         // pos_t new_pos = arcade_read(&player.position);
-        pos_t displacement = arcade_read(&player.position);
+        pos_t displacement = arcade_read();
         int place = read_joystick(&player.rotation);
         if (displacement.x || displacement.y || displacement.z) {
             new_pos = (pos_t){player.position.x + displacement.x, player.position.y + displacement.y, player.position.z + displacement.z};
@@ -147,5 +161,8 @@ void notmain() {
         // }
         delay_ms(50);
         uart_flush_tx();
+    }
+    save_current_state(w, &player, 0, directory, &fs);
+
     }
 }

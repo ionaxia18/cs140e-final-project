@@ -47,6 +47,28 @@ void uart_put_float(float f) {
         frac -= digit;
     }
 }
+void uart_put_float(float f) {
+    if (f < 0) {
+        uart_put8('-');
+        f = -f;
+    }
+
+    int int_part = (int)f;
+    uart_put_int(int_part);
+
+    float frac = f - int_part;
+    if (frac == 0) {
+        return;
+    }
+
+    uart_put8('.');
+    for (int i = 0; i < 3; i++) {   // 3 decimal places
+        frac *= 10;
+        int digit = (int)frac;
+        uart_put8('0' + digit);
+        frac -= digit;
+    }
+}
 void uart_put_str(char* str) {
     for (int i = 0; str[i] != '\0'; i++) {
         uart_put8(str[i]);
@@ -69,9 +91,11 @@ void send_set_block(pos_t p, block_t new_block) {
 void send_player_move(player_t* p) {
     uart_put_str("PLAYER ");
     uart_put_float(p->position.x);
+    uart_put_float(p->position.x);
     uart_put_str(" ");
     uart_put_float(p->position.y - 1.0f);
     uart_put_str(" ");
+    uart_put_float(p->position.z);
     uart_put_float(p->position.z);
     uart_put_str("\n");
 }
