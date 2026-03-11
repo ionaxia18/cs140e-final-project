@@ -122,11 +122,11 @@ void notmain() {
         pos_t displacement = arcade_read();
         int place = read_joystick(&player.rotation);
         if (displacement.x || displacement.y || displacement.z) {
-            new_pos = (pos_t){player.position.x + displacement.x, player.position.y + displacement.y, player.position.z + displacement.z};
+            new_pos = player_next_move(&player, displacement);
+            // new_pos = (pos_t){player.position.x + displacement.x, player.position.y + displacement.y, player.position.z + displacement.z};
             if (valid_player_move(w, &player, new_pos)) {
                 player.position = new_pos;
                 send_player_move(&player);
-
             }
         }
 
