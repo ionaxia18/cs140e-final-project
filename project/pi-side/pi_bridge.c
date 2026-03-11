@@ -13,6 +13,11 @@
 #include "../gpio/joystick.h"
 #include "../gpio/matrix.h"
 #include "uart-helpers.h"
+#include "filesystems/boot_server.h"
+
+static char heap[64 * 1500];
+static size_t heap_size = sizeof(heap);
+static void* heap_start = heap;
 #define BAUDRATE B115200
 // takes in a character move, will move the player on pi side and return new coordinates
 void do_move(char c, player_t* player) {
@@ -74,24 +79,24 @@ void change_block(char c, world_t* w, player_t* player) {
     // uart_put_str("\n");
 // }
 
-world_t* initialize_server() {
-    // initialize world seed
-    world_info_t info = {
-        .seed = 0,
-        .min = (pos_t){0, -60, 0},
-        .max = (pos_t){16, -44, 16},
-        .edits_cap = 4096,
-        .pending_cap = 1024,
-    };
+// world_t* initialize_server() {
+//     // initialize world seed
+//     world_info_t info = {
+//         .seed = 0,
+//         .min = (pos_t){0, -60, 0},
+//         .max = (pos_t){16, -44, 16},
+//         .edits_cap = 4096,
+//         .pending_cap = 1024,
+//     };
 
-    world_t* w = world_create(&info);
-    if (!w) {
-        panic("Failed to create world");
-        return w;
-        return w;
-    }
-    return w;
-}
+//     world_t* w = world_create(&info);
+//     if (!w) {
+//         panic("Failed to create world");
+//         return w;
+//         return w;
+//     }
+//     return w;
+// }
 
 bool position_changed(pos_t cur, pos_t old) {
     return (cur.x != old.x) || (cur.y != old.y) || (cur.z != old.z);
@@ -102,12 +107,17 @@ bool rotation_changed(p_rot_t cur, p_rot_t old) {
 }
 
 void notmain() {
-    player_t player = {.player_id = 0,
-        .position = (pos_t) {0, -60, 0},
-        .rotation = (p_rot_t) {0, 0}
-    };
+    // player_t player = {.player_id = 0,
+    //     .position = (pos_t) {0, -60, 0},
+    //     .rotation = (p_rot_t) {0, 0}
+    // };
 
-    world_t* w = initialize_server();
+    // world_t* w = initialize_server();
+    myinit(heap_start, heap_size);
+    file_t *info = get_current_state(0);
+    world_t w = info->world;
+    player_t player = info->player;
+
     arcade_init();
     joystick_init();
     uart_init();
@@ -131,7 +141,7 @@ void notmain() {
         }
         if (!place) {
             uart_put_str("   ");
-            change_block('p', w, &player);
+            change_block('p', &w, &player);
         }
         delay_ms(300);
         uart_flush_tx();
@@ -155,5 +165,7 @@ void notmain() {
         //     }
         // }
     }
+    file_t new_info = {.world = *w, .player = player };
+    save_current_state(&new_info, 0);
 
 }

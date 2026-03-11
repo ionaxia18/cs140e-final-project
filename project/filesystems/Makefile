@@ -16,7 +16,7 @@ PROG_OBJ := objs/$(PROG).o
 BOOT_OBJ := objs/boot_server.o
 ALLOC_OBJ := objs/allocator.o
 
-SD_SRCS := pi-sd.c fat32.c fat32-helpers.c fat32-lfn-helpers.c mbr.c mbr-helpers.c
+SD_SRCS := pi-sd.c fat32.c fat32-helpers.c fat32-lfn-helpers.c mbr.c mbr-helpers.c ../boot/world-gen.c ../pi-side/uart-helpers.c
 SD_OBJS := $(patsubst %.c,objs/%.o,$(SD_SRCS))
 
 EXTERNAL_SRCS :=  external-code/unicode-utf8.c external-code/emmc.c

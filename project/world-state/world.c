@@ -3,9 +3,9 @@
 #include "pending.h"
 #include "../heap/allocator.h"
 
-static char heap[64 * 1500];
-static size_t heap_size = sizeof(heap);
-static void* heap_start = heap;
+// static char heap[64 * 1500];
+// static size_t heap_size = sizeof(heap);
+// static void* heap_start = heap;
 
 world_key_t world_make_key(pos_t p) {
     uint32_t mask = 0x3ff; 
@@ -34,7 +34,6 @@ bool world_pos_is_valid(pos_t p) {
 
 // to do: this should somehow link to how the fruitjuice server is being started up
 world_t* world_create(const world_info_t* info) {
-    myinit(heap_start, heap_size);
     world_t* w = mymalloc(sizeof(world_t));
     if (!w) {
         trace("Failed to allocate memory for world");

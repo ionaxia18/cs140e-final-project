@@ -1,8 +1,8 @@
 #include "rpi.h"
 #include "../world-state/world.h"
 #include "../world-state/hashtable.h"
-#include "../../fat32/pi-sd.h"
-#include "../../fat32/fat32.h"
+#include "../../filesystems/pi-sd.h"
+#include "../../filesystems/fat32.h"
 #include "../pi-side/uart-helpers.h"
 
 
@@ -19,4 +19,4 @@ block_t flat_world(pos_t p);
 // Create starting flat world with mountains
 void create_world_file(char *name, fat32_fs_t *fs, pi_dirent_t *root);
 void gen_flat_mtn_world(uint32_t seed);
-void write_flat_mtn_world(uint32_t seed, fat32_fs_t *fs, pi_dirent_t *root, char *name);
+void write_flat_mtn_world(uint32_t seed, world_t * world);

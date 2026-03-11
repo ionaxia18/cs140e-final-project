@@ -85,7 +85,7 @@ void create_world_file(char *name, fat32_fs_t *fs, pi_dirent_t *root) {
 #define LINE_MAX 20
 #define WORLD_SZ (WORLD_SLICE_Y * WORLD_SLICE_X * WORLD_SLICE_Z)
 
-void write_flat_mtn_world(uint32_t seed, fat32_fs_t *fs, pi_dirent_t *root, char *name) {
+void write_flat_mtn_world(uint32_t seed, world_t * world) {
     printk("Writing initial world for seed %u\n", seed);
 
     // One contiguous buffer: WORLD_LINES lines, each up to LINE_MAX bytes
@@ -98,34 +98,29 @@ void write_flat_mtn_world(uint32_t seed, fat32_fs_t *fs, pi_dirent_t *root, char
                 pos_t p = (pos_t) {x, y, z};
                 block_t block = make_flat_with_mtns(seed, p);
                 if (block == BLOCK_STONE) {
-                    snprintk(data + off, LINE_MAX, "%d %d %d %d\n", x, y, z, block);
-                    trace("Block %d at %d, %d, %d\n", block, x, y, z);
-                    uart_put_str(data);
+                    world_set_block(world, p, block);
                 }
-           
+                // if (block == BLOCK_STONE) {
+                //     snprintk(data + off, LINE_MAX, "%d %d %d %d\n", x, y, z, block);
+                //     trace("Block %d at %d, %d, %d\n", block, x, y, z);
+                //     uart_put_str(data);
+                // }
             }
         }
     }
-
-    // pi_file_t file = (pi_file_t) {
-    //     .data = data,
-    //     .n_data = off,
-    //     .n_alloc = sizeof(data),
-    // };
-    // assert(fat32_write(fs, root, name, &file));
 }
 
-void gen_flat_mtn_world(uint32_t seed) {
-    char name[20];
-    snprintk(name, sizeof(name), "%u", seed);
-    strcat(name, ".TXT");
-    fat32_fs_t fs;
-    pi_dirent_t root;
+// void gen_flat_mtn_world(uint32_t seed) {
+//     char name[20];
+//     snprintk(name, sizeof(name), "%u", seed);
+//     strcat(name, ".TXT");
+//     fat32_fs_t fs;
+//     pi_dirent_t root;
 
-    create_world_file(name, &fs, &root);
+//     create_world_file(name, &fs, &root);
 
-    write_flat_mtn_world(seed, &fs, &root, name);
-    printk("Check your SD card for a file called %s\n", name);
+//     write_flat_mtn_world(seed, &fs, &root, name);
+//     printk("Check your SD card for a file called %s\n", name);
 
-}
+// }
 
