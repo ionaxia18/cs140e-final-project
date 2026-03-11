@@ -54,7 +54,7 @@ void lfn_print_ent(lfn_dir_t *l, uint8_t cksum) {
     printk("\tcksum=%x (expected=%x)\n", l->cksum, cksum);
 }
 
-#include "unicode-utf8.h"
+#include "external-code/unicode-utf8.h"
 
 static inline int lfn_terminator(uint8_t *x) {
     if(x[0] == 0 && x[1] == 0)

@@ -2,6 +2,7 @@
 #include "hashtable.h"
 #include "pending.h"
 #include "../heap/allocator.h"
+#include "../boot/world-gen.h"
 
 // static char heap[64 * 1500];
 // static size_t heap_size = sizeof(heap);

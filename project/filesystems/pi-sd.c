@@ -1,6 +1,6 @@
 #include "rpi.h"
 #include "pi-sd.h"
-#include "libc/fast-hash32.h"
+#include "../libc/fast-hash32.h"
 
 #if 0
     // old bzt driver
@@ -10,7 +10,7 @@
 #   include "external-code/emmc.h"
 #endif
 
-#include "libc/our-crc32.h"
+#include "../libc/our-crc32.h"
 
 static int trace_p = 0;
 static int init_p = 0;

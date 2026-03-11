@@ -124,41 +124,6 @@ void load_game(file_t *file_info, struct world *world, player_t *player) {
     trace("sent PLAYER %d %d %d\n", player->position.x, player->position.y, player->position.z);
 }
 
-// void pi_to_plugin(world_t *world, player_t * player) {
-//     world_info_t * info = world->info;
-//     for (int x = info->min.x; x < info->max.x; x ++ ) {
-//         for (int y = info->min.y; y < info->max.y; y++) {
-//             for (int z = info->min.z; z < info->max.z; z ++ ) {
-//                 pos_t pos = {.x = x, .y = y, .z = z};
-//                 world_entry_t* e = table_get_entry(&world->edits, pos);
-//                 if (e) {
-//                     uart_put_str("BLOCK");
-//                     uart_put8(' ');
-//                     uart_put_int(x);
-//                     uart_put8(' ');
-//                     uart_put_int(y);
-//                     uart_put8(' ');
-//                     uart_put_int(z);
-//                     uart_put8(' ');
-//                     uart_put_int(e->block);
-//                     uart_put8('\n');
-//                     trace("sent BLOCK %d %d %d %d\n", x, y, z, e->block);
-//                 }
-//             }
-//         }
-//     }
-
-//     uart_put_str("PLAYER ");
-//     uart_put_int(player->position.x);
-//     uart_put_str(" ");
-//     uart_put_int(player->position.y);
-//     uart_put_str(" ");
-//     uart_put_int(player->position.z);
-//     uart_put_str("\n");
-//     trace("sent PLAYER %d %d %d\n", player->position.x, player->position.y, player->position.z);
-
-// }
-
 fat32_fs_t initialize_fs(pi_dirent_t * directory) {
     kmalloc_init_mb(FAT32_HEAP_MB);
     pi_sd_init();
@@ -224,7 +189,7 @@ int create_boot_file(uint32_t seed, pi_dirent_t * root, fat32_fs_t * fs) {
     file_t * result = save_game(w, &player, &out_size);
 
     pi_file_t file_save = {
-        .data = (uint8_t *)result,
+        .data = (char *)result,
         .n_data = out_size,
         .n_alloc = out_size
     };
@@ -268,7 +233,7 @@ int save_current_state(world_t * world, player_t * player, uint32_t seed, pi_dir
     uint32_t out_size = 0;
     file_t * result = save_game(world, player, &out_size);
     pi_file_t file_save = {
-        .data = (uint8_t *)result,
+        .data = (char *)result,
         .n_data = out_size,
         .n_alloc = out_size
     };
