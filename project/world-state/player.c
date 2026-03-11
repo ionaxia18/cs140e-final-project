@@ -164,11 +164,17 @@ pos_t player_next_move(player_t* p, pos_t displacement) {
     float y = p->position.y;
     float z = p->position.z;
 
-    float dx = -sin_deg(p->rotation.yaw) * cos_deg(p->rotation.pitch);
-    float dz =  cos_deg(p->rotation.yaw) * cos_deg(p->rotation.pitch);
+    float fx = sin_deg(p->rotation.yaw);
+    float fz = -cos_deg(p->rotation.yaw);
 
-    x += displacement.x * dx;
-    z += displacement.z * dz;
+    float rx = cos_deg(p->rotation.yaw);
+    float rz = sin_deg(p->rotation.yaw);
+
+    float forward = displacement.z;
+    float right = displacement.x;
+
+    x += fx * forward + rx * right;
+    z += fz * forward + rz * right;
     return (pos_t){x, y, z};
 }
 
@@ -186,32 +192,30 @@ bool valid_player_move(world_t *w, player_t* player, pos_t new_pos) {
         return false;
     }
     /* lower = block at feet (can be solid ground), upper = block at head (must be AIR) */
-    pos_t lower = new_pos;
-    pos_t upper = new_pos;
+    pos_t lower = {floorf_custom(new_pos.x), floorf_custom(new_pos.y), floorf_custom(new_pos.z)};
+    pos_t upper = {floorf_custom(new_pos.x), floorf_custom(new_pos.y), floorf_custom(new_pos.z)};
     upper.y += 1;
-    if (world_get_block(w, upper) != BLOCK_AIR) {
-        trace("block is type %d for upper pos %d %d %d (head clearance)\n", world_get_block(w, upper), (int)upper.x, (int)upper.y, (int)upper.z);
+    if (world_get_block(w, lower) != BLOCK_AIR || world_get_block(w, upper) != BLOCK_AIR) {
+        // trace("block is type %d for upper pos %d %d %d (head clearance)\n", world_get_block(w, upper), (int)upper.x, (int)upper.y, (int)upper.z);
         // world_print(w);
-        uint32_t index = table_hash_index(upper, w->edits.cap);
-        trace("hash for lower %d\n", index);
-        if (w->edits.entries[index]) {
-            trace("entry is valid\n");
-            world_entry_t* cur = w->edits.entries[index];
-            while (cur) {
-                world_entry_t* next = cur->next;
-                if (block_pos_equal(cur->pos, lower) || block_pos_equal(cur->pos, upper)) {
-                      trace("entry block is %d\n", w->edits.entries[index]->block);
-                    trace("entry pos is %d\n", w->edits.entries[index]->block);
-                    trace("new position or block on top had a block already,  x=%d, y=%d, z=%d\nx=%d, y=%d, z=%d\n", (int)lower.x, (int)lower.y, (int)lower.z, (int)upper.x, (int)upper.y, (int)upper.z);
-                    trace("block at upper %d\n", world_get_block(w, upper));
-                }
+        // uint32_t index = table_hash_index(upper, w->edits.cap);
+        // // trace("hash for lower %d\n", index);
+        // if (w->edits.entries[index]) {
+        //     trace("entry is valid\n");
+        //     world_entry_t* cur = w->edits.entries[index];
+        //     while (cur) {
+        //         world_entry_t* next = cur->next;
+        //         if (block_pos_equal(cur->pos, lower) || block_pos_equal(cur->pos, upper)) {
+        //               trace("entry block is %d\n", w->edits.entries[index]->block);
+        //             trace("entry pos is %d\n", w->edits.entries[index]->block);
+        //             trace("new position or block on top had a block already,  x=%d, y=%d, z=%d\nx=%d, y=%d, z=%d\n", (int)lower.x, (int)lower.y, (int)lower.z, (int)upper.x, (int)upper.y, (int)upper.z);
+        //             trace("block at upper %d\n", world_get_block(w, upper));
+        //         }
             
-                cur = next;
-            }
-        }
+        //         cur = next;
+        //     }
+        // }
         // trace("entry block is %d\n", w->entries[index].block);
-
-
         return false;
     }
     return true;
