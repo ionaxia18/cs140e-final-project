@@ -4,7 +4,9 @@
 #include "../constants.h"
 // #include "../world-state/world.h"
 #include "../world-state/player.h"
-#include "../world-state/world-gen.h"
+// #include "../world-state/world.h"
+#include "../world-state/player.h"
+#include "../boot/world-gen.h"
 #include "../world-state/pending.h"
 #include "../world-state/hashtable.h"
 
@@ -13,6 +15,12 @@
 #include "../gpio/matrix.h"
 
 #include "uart-helpers.h"
+#include "../filesystems/boot_server.h"
+#include "../heap/allocator.h"
+
+static char heap[64 * 1500];
+static size_t heap_size = sizeof(heap);
+static void* heap_start = heap;
 #define BAUDRATE B115200
 // takes in a character move, will move the player on pi side and return new coordinates
 
@@ -64,7 +72,6 @@ world_t* initialize_server() {
     if (!w) {
         panic("Failed to create world");
         return w;
-        return w;
     }
     return w;
 }
@@ -78,12 +85,18 @@ bool rotation_changed(p_rot_t cur, p_rot_t old) {
 }
 
 void notmain() {
-    player_t player = {.player_id = 0,
-        .position = (pos_t) {0, -60, 0},
-        .rotation = (p_rot_t) {0, 0}
-    };
+    // player_t player = {.player_id = 0,
+    //     .position = (pos_t) {0, -60, 0},
+    //     .rotation = (p_rot_t) {0, 0}
+    // };
 
     world_t* w = initialize_server();
+    pi_dirent_t * directory = NULL;
+    fat32_fs_t fs = initialize_fs(directory);
+    myinit(heap_start, heap_size);
+    player_t player;
+    get_current_state(0, directory, &fs, w, &player);
+
     matrix_init();
     arcade_init();
     joystick_init();
@@ -124,4 +137,6 @@ void notmain() {
         delay_ms(100);
         uart_flush_tx();
     }
+    save_current_state(w, &player, 0, directory, &fs);
+
 }

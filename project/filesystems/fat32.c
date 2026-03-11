@@ -113,10 +113,10 @@ static uint32_t get_cluster_chain_length(fat32_fs_t *fs, uint32_t start_cluster)
   // clusters.
   uint32_t cur_cluster = start_cluster;
   uint32_t length = 1;
-  trace("cur cluster is now %d\n", cur_cluster);
+  // trace("cur cluster is now %d\n", cur_cluster);
   while(fat32_fat_entry_type(cur_cluster) != LAST_CLUSTER) {
     cur_cluster = fs->fat[cur_cluster];
-    trace("cur cluster is now %d\n", cur_cluster);
+    // trace("cur cluster is now %d\n", cur_cluster);
     length ++;
   }
   return length;
@@ -134,7 +134,7 @@ static void read_cluster_chain(fat32_fs_t *fs, uint32_t start_cluster, uint8_t *
   int length = 0;
 
   while(fat32_fat_entry_type(cur_cluster) != LAST_CLUSTER) {
-    trace("%d\n", cur_cluster);
+    // trace("%d\n", cur_cluster);
     uint32_t lba = cluster_to_lba(fs, cur_cluster);
     pi_sd_read(data + length * fs->sectors_per_cluster * NBYTES_PER_SECTOR, lba, fs->sectors_per_cluster);
     cur_cluster = fs->fat[cur_cluster];
@@ -266,7 +266,7 @@ pi_file_t *fat32_read(fat32_fs_t *fs, pi_dirent_t *directory, char *filename) {
 
   // TODO: figure out the length of the cluster chain
   uint32_t length = get_cluster_chain_length(fs, dirent->cluster_id);
-  trace("cluster chain length is %d\n", length);
+  // trace("cluster chain length is %d\n", length);
 
   // TODO: allocate a buffer large enough to hold the whole file
   uint32_t nbytes = NBYTES_PER_SECTOR * length * fs->sectors_per_cluster;
@@ -300,7 +300,7 @@ static uint32_t find_free_cluster(fat32_fs_t *fs, uint32_t start_cluster) {
 
   for (uint32_t i = start_cluster; i < entries; i++) {
     if (fat32_fat_entry_type(fs->fat[i]) == FREE_CLUSTER) {
-      trace("found free cluster %d\n", i);
+      // trace("found free cluster %d\n", i);
       return i;
     }
   }
@@ -342,7 +342,7 @@ static void write_cluster_chain(fat32_fs_t *fs, uint32_t start_cluster, uint8_t 
   // unimplemented();
   uint32_t cluster = start_cluster;
   if (nbytes == 0) {
-    trace("no bytes to write\n");
+    // trace("no bytes to write\n");
     return;
   }
   
