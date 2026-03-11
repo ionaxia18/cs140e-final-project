@@ -74,7 +74,9 @@ typedef uint32_t world_key_t;
 
 typedef struct world world_t;
 
+void print_pos(pos_t p);
 
+void world_print(world_t* w);
 /* Create integer key of 10 bit chunks: x bits | y bits | z bits
 Theoretically limits world max size to 1024x1024x1024 ie -512 to 511 for each
 Converts position into key for hash table */

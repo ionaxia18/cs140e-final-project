@@ -14,6 +14,6 @@
 
 void arcade_init(void);
 
-void arcade_read(pos_t*);
+pos_t arcade_read();
 
 #endif

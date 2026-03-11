@@ -11,7 +11,6 @@
 #define PLUGIN_IP "127.0.0.1"
 #define PLUGIN_PORT 4711
 #define BAUDRATE    B115200
-#define PI_PORT "/dev/cu.usbserial-210"
 
 typedef uint8_t block_t;
 
