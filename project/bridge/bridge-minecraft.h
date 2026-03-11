@@ -6,4 +6,5 @@ int setup_pi_connection(const char * device);
 void put_block(int sock, int x, int y, int z, block_t block);
 void move_player(int sock, int x, int y, int z);
 int fruit_juice_test(int sock);
+int connect_to_fruitjuice_ngrok(const char *host, int port);
 #endif

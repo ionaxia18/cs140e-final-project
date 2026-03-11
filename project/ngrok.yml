@@ -1,0 +1,8 @@
+version: "2"
+tunnels:
+  minecraft:
+    proto: tcp
+    addr: 25565
+  fruitjuice:
+    proto: tcp
+    addr: 4711

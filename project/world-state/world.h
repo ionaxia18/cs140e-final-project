@@ -24,6 +24,14 @@ typedef struct {
     float z;
 } pos_t;
 
+enum {
+    BLOCK_TOP = 0,
+    BLOCK_LEFT = 1,
+    BLOCK_FRONT = 2,
+    BLOCK_RIGHT = 3,
+    BLOCK_BOTTOM = 4
+};
+
 typedef struct world_entry {
     block_t block;
     pos_t pos;

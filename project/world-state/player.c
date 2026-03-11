@@ -63,28 +63,49 @@ bool player_position_increment(player_t* p, float dx, float dy, float dz) {
     return true;
 }
 
+
 pos_t pointing_block(world_t* w, player_t* p) {
     pos_t pos = p->position;
-    // pos.x += 0.5f;
-    // pos.z += 0.5f;
-    pos_t new_pos = pos;
+    // pos_t new_pos = pos;
     p_rot_t rot = p->rotation;
+    float start_x = pos.x + 0.5f;
+    float start_y = pos.y + 1.6f;
+    float start_z = pos.z + 0.5f;
     float dx = -sin_deg(rot.yaw) * cos_deg(rot.pitch);
     float dy = -sin_deg(rot.pitch);
     float dz = cos_deg(rot.yaw) * cos_deg(rot.pitch);
-    int16_t max_distance = 4;
-    float step_size = 0.1;
-    pos_t last_pos = pos;
-    //  trace("current difference is %d, %d, %d", (int16_t)(dx * 10), (int16_t)(dy * 10), (int16_t)(dz * 10));
+    int16_t max_distance = 2;
+    pos_t last_pos = (pos_t){
+        floorf_custom(start_x),
+        floorf_custom(start_y),
+        floorf_custom(start_z)
+    };
+    pos_t prev_checked = last_pos;
+    // float step_size = 0.1;
+    // pos_t last_pos = pos;
+    //  trace("current difference is %d, %d, %d", (int16_t)(dx * 10), (int16_t)(dy * 10), (int16_t)(dz * 10));
+    
     for (float i = 0; i < max_distance; i+= 0.05) {
-        new_pos = (pos_t){(int16_t)(pos.x + dx * i), (int16_t)(pos.y + dy * i), (int16_t)(pos.z + dz * i)};
-        if (new_pos.x == pos.x &&
-            new_pos.y == pos.y &&
-            new_pos.z == pos.z)
+        pos_t new_pos = (pos_t){
+            floorf_custom(start_x + dx * i),
+            floorf_custom(start_y + dy * i),
+            floorf_custom(start_z + dz * i)
+        };
+        if (new_pos.x == prev_checked.x &&
+            new_pos.y == prev_checked.y &&
+            new_pos.z == prev_checked.z)
             continue;
-        if (!world_pos_is_valid(new_pos)) { return last_pos; }
-        // trace("current block position is %d, %d, %d", new_pos.x, new_pos.y, new_pos.z);
-        last_pos = pos;
+        prev_checked = new_pos;
+
+        if (!world_pos_is_valid(new_pos)) {
+            return last_pos;
+        }
+        if (world_get_block(w, new_pos) != BLOCK_AIR) {
+            return last_pos;
+        }
+
+        last_pos = new_pos;
     }
-    return new_pos;
+
+    return last_pos;
 }
