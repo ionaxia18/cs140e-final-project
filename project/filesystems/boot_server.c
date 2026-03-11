@@ -29,7 +29,7 @@ file_t * save_game(world_t * world, player_t * player, uint32_t * out_size) {
     for (uint32_t i = 0; i < world->pending.size; i++) {
         file_info->pending_blocks[i].block = world->pending.entries[i].block;
         file_info->pending_blocks[i].pos = world->pending.entries[i].pos;
-        file_info->pending_blocks[i].full = world->pending.entries[i].full;
+        // file_info->pending_blocks[i].full = world->pending.entries[i].full;
         file_info->pending_indices[i] = world->pending.indices[i];
     }
 
@@ -39,6 +39,7 @@ file_t * save_game(world_t * world, player_t * player, uint32_t * out_size) {
         world_entry_t *curr = world->edits.entries[i];
         
         while (curr != NULL) {
+            trace("setting entry %d\n", count);
             if (count >= MAX_EDITS) {
                 trace("Warning: Too many edits to save, truncating!");
                 break; 
@@ -46,7 +47,7 @@ file_t * save_game(world_t * world, player_t * player, uint32_t * out_size) {
 
             file_info->edit_blocks[count].block = curr->block;
             file_info->edit_blocks[count].pos   = curr->pos;
-            file_info->edit_blocks[count].full  = curr->full;
+            // file_info->edit_blocks[count].full  = curr->full;
             
             count++;
             curr = curr->next;
@@ -78,7 +79,7 @@ void load_game(file_t *file_info, struct world *world, player_t *player) {
         world_entry_t entry = {
             .block = f->block,
             .pos = f->pos,
-            .full = f->full,
+            // .full = f->full,
             .next = NULL
         };
 
@@ -96,36 +97,23 @@ void load_game(file_t *file_info, struct world *world, player_t *player) {
 
     trace("currently hereee\n");
     for (uint32_t i = 0; i < file_info->edits_size; i++) {
+        pos_t pos = file_info->edit_blocks[i].pos;
+        trace("setting entry %d\n", i);
         table_set_entry(&world->edits, 
                         file_info->edit_blocks[i].block, 
                         file_info->edit_blocks[i].pos);
+        uart_put_str("BLOCK");
+        uart_put8(' ');
+        uart_put_int(pos.x);
+        uart_put8(' ');
+        uart_put_int(pos.y);
+        uart_put8(' ');
+        uart_put_int(pos.z);
+        uart_put8(' ');
+        uart_put_int(file_info->edit_blocks[i].block);
+        uart_put8('\n');
+        trace("sent BLOCK %d %d %d %d\n", pos.x, pos.y, pos.z, file_info->edit_blocks[i].block);
     }
-}
-
-void pi_to_plugin(world_t *world, player_t * player) {
-    world_info_t * info = world->info;
-    for (int x = info->min.x; x < info->max.x; x ++ ) {
-        for (int y = info->min.y; y < info->max.y; y++) {
-            for (int z = info->min.z; z < info->max.z; z ++ ) {
-                pos_t pos = {.x = x, .y = y, .z = z};
-                world_entry_t* e = table_get_entry(&world->edits, pos);
-                if (e) {
-                    uart_put_str("BLOCK");
-                    uart_put8(' ');
-                    uart_put_int(x);
-                    uart_put8(' ');
-                    uart_put_int(y);
-                    uart_put8(' ');
-                    uart_put_int(z);
-                    uart_put8(' ');
-                    uart_put_int(e->block);
-                    uart_put8('\n');
-                    trace("sent BLOCK %d %d %d %d\n", x, y, z, e->block);
-                }
-            }
-        }
-    }
-
     uart_put_str("PLAYER ");
     uart_put_int(player->position.x);
     uart_put_str(" ");
@@ -134,8 +122,42 @@ void pi_to_plugin(world_t *world, player_t * player) {
     uart_put_int(player->position.z);
     uart_put_str("\n");
     trace("sent PLAYER %d %d %d\n", player->position.x, player->position.y, player->position.z);
-
 }
+
+// void pi_to_plugin(world_t *world, player_t * player) {
+//     world_info_t * info = world->info;
+//     for (int x = info->min.x; x < info->max.x; x ++ ) {
+//         for (int y = info->min.y; y < info->max.y; y++) {
+//             for (int z = info->min.z; z < info->max.z; z ++ ) {
+//                 pos_t pos = {.x = x, .y = y, .z = z};
+//                 world_entry_t* e = table_get_entry(&world->edits, pos);
+//                 if (e) {
+//                     uart_put_str("BLOCK");
+//                     uart_put8(' ');
+//                     uart_put_int(x);
+//                     uart_put8(' ');
+//                     uart_put_int(y);
+//                     uart_put8(' ');
+//                     uart_put_int(z);
+//                     uart_put8(' ');
+//                     uart_put_int(e->block);
+//                     uart_put8('\n');
+//                     trace("sent BLOCK %d %d %d %d\n", x, y, z, e->block);
+//                 }
+//             }
+//         }
+//     }
+
+//     uart_put_str("PLAYER ");
+//     uart_put_int(player->position.x);
+//     uart_put_str(" ");
+//     uart_put_int(player->position.y);
+//     uart_put_str(" ");
+//     uart_put_int(player->position.z);
+//     uart_put_str("\n");
+//     trace("sent PLAYER %d %d %d\n", player->position.x, player->position.y, player->position.z);
+
+// }
 
 fat32_fs_t initialize_fs(pi_dirent_t * directory) {
     kmalloc_init_mb(FAT32_HEAP_MB);

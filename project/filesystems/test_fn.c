@@ -16,10 +16,18 @@ void notmain() {
     myinit(heap_start, heap_size);
     create_boot_file(0, directory, &fs);
     player_t *player = NULL;
-    world_t *world = NULL;
+    world_info_t info = {
+        .seed = 0,
+        .min = (pos_t){0, -60, 0},
+        .max = (pos_t){16, -44, 16},
+        .edits_cap = 2048,
+        .pending_cap = 1024,
+    };
+
+    world_t* world = world_create(&info);
     get_current_state(0, directory, &fs, world, player);
     trace("got result\n");
-    pi_to_plugin(world, player);
+    // pi_to_plugin(world, player);
     assert(player->player_id == 0);
     assert(player->position.x == 0);
     assert(player->position.y == -60);
@@ -31,7 +39,7 @@ void notmain() {
     assert(player->position.z == 0);
     trace("finish player tests\n");
 
-    pos_t pos = {.x = 0, .y = 0, .z =0};
+    pos_t pos = {.x = -50, .y = -50, .z =-50};
     trace("got block with %d\n", world_get_block(world, pos));
     world_set_block(world, pos, BLOCK_GRASS);
     block_t block = world_get_block(world, pos);
