@@ -159,15 +159,14 @@ bool valid_player_move(world_t *w, player_t* player, pos_t new_pos) {
         trace("new position is invalid, x=%d, y=%d, z=%d\n", (int)new_pos.x, (int)new_pos.y, (int)new_pos.z);
         return false;
     }
+    /* lower = block at feet (can be solid ground), upper = block at head (must be AIR) */
     pos_t lower = new_pos;
-    lower.y += 1;
     pos_t upper = new_pos;
     upper.y += 1;
-    if ((world_get_block(w, lower) != BLOCK_AIR) || (world_get_block(w, upper) != BLOCK_AIR)) {
-        trace("block is type %d for lowe pos is %d %d %d\n", world_get_block(w, lower), (int)lower.x, (int)lower.y, (int)lower.z);
-        trace("block is type %d for upper\n", world_get_block(w, upper));
+    if (world_get_block(w, upper) != BLOCK_AIR) {
+        trace("block is type %d for upper pos %d %d %d (head clearance)\n", world_get_block(w, upper), (int)upper.x, (int)upper.y, (int)upper.z);
         // world_print(w);
-        uint32_t index = table_hash_index(lower, w->edits.cap);
+        uint32_t index = table_hash_index(upper, w->edits.cap);
         trace("hash for lower %d\n", index);
         if (w->edits.entries[index]) {
             trace("entry is valid\n");
@@ -178,7 +177,7 @@ bool valid_player_move(world_t *w, player_t* player, pos_t new_pos) {
                       trace("entry block is %d\n", w->edits.entries[index]->block);
                     trace("entry pos is %d\n", w->edits.entries[index]->block);
                     trace("new position or block on top had a block already,  x=%d, y=%d, z=%d\nx=%d, y=%d, z=%d\n", (int)lower.x, (int)lower.y, (int)lower.z, (int)upper.x, (int)upper.y, (int)upper.z);
-                    trace("block at lower %d, block at upper\n", world_get_block(w, lower), world_get_block(w, upper));
+                    trace("block at upper %d\n", world_get_block(w, upper));
                 }
             
                 cur = next;

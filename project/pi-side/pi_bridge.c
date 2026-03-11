@@ -38,11 +38,14 @@ void do_move(player_t* player, pos_t new_pos) {
           world_get_block(w, hit),
           (int)place.x, (int)place.y, (int)place.z);
 
-    if (!world_set_block(w, place, block_selected)) {
+    /* For breaking: delete block at hit. For placing: add block at place. */
+    pos_t target = (block_selected == BLOCK_AIR) ? hit : place;
+    if (!world_set_block(w, target, block_selected)) {
         trace("world_set_block FAILED at (%d,%d,%d)\n",
-                (int)place.x, (int)place.y, (int)place.z);
+                (int)target.x, (int)target.y, (int)target.z);
+        return;
     }
-    send_set_block(place, block_selected);
+    send_set_block(target, block_selected);
 }
  
 // void update_rotation(player_t* player, uint16_t yaw, uint16_t pitch) {
@@ -56,8 +59,8 @@ void do_move(player_t* player, pos_t new_pos) {
 // }
 
 world_t* initialize_server() {
-    // initialize world seed
-    world_info_t info = {
+    /* static so it outlives this function - world->info points to it */
+    static world_info_t info = {
         .seed = 0,
         .min = (pos_t){-32, -59, -32},
         .max = (pos_t){32, -44, 32},
@@ -68,7 +71,6 @@ world_t* initialize_server() {
     world_t* w = world_create(&info);
     if (!w) {
         panic("Failed to create world");
-        return w;
         return w;
     }
     return w;
@@ -99,6 +101,7 @@ void notmain() {
     p_rot_t last_rot = player.rotation;
     block_t block_selected = 0;
     block_t last_block = 0;  /* for debounce: only place on button press, not hold */
+    int last_place = 0;      /* for debounce: only break on button press, not hold */
     trace("Server initialized\n");
     send_player_move(&player);
     send_player_rotation(&player);
@@ -121,10 +124,11 @@ void notmain() {
             send_player_rotation(&player);
             last_rot = player.rotation;
         }
-        if (place) {
+        if (place && !last_place) {
             block_selected = BLOCK_AIR;
             change_block(w, &player, block_selected);
         }
+        last_place = place;
         block_selected = read_block();
         /* Only place on press (rising edge), not while held */
         if (block_selected && block_selected != 16 && !last_block) {
