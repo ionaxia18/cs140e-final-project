@@ -22,9 +22,11 @@ block_t read_block(void) {
 
         for (int row = 0; row < 4; row++) {
             if (!gpio_read(row_pins[row])) {
+                trace("block is now %d", (row * 4) + col + 1);
                 return (row * 4) + col + 1;
             }
         }
     }
+    
     return 0;
 }

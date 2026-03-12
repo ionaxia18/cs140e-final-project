@@ -30,6 +30,15 @@ void do_move(player_t* player, pos_t new_pos) {
 
     /* For breaking: delete block at hit. For placing: add block at place. */
     pos_t target = (block_selected == BLOCK_AIR) ? hit : place;
+    pos_t pos = player->position;
+    pos_t lower = {floorf_custom(pos.x), floorf_custom(pos.y), floorf_custom(pos.z)};
+    pos_t upper = lower;
+    upper.y += 1;
+    pos_t target_floor = {floorf_custom(target.x), floorf_custom(target.y), floorf_custom(target.z)};
+    if (block_pos_equal(target_floor, upper) || block_pos_equal(target_floor, lower)) {
+        trace("cant place block in player");
+        return;
+    }
     if (!world_set_block(w, target, block_selected)) {
         trace("world_set_block FAILED at (%d,%d,%d)\n",
                 (int)target.x, (int)target.y, (int)target.z);
@@ -86,7 +95,6 @@ void notmain() {
     pi_dirent_t * directory = NULL;
     fat32_fs_t fs = initialize_fs(directory);
     get_current_state(0, directory, &fs, w, &player);
-
     matrix_init();
     arcade_init();
     joystick_init();
@@ -98,7 +106,7 @@ void notmain() {
     p_rot_t last_rot = player.rotation;
     block_t block_selected = 0;
     block_t last_block = 0;  /* for debounce: only place on button press, not hold */
-    int last_place = 0;      /* for debounce: only break on button press, not hold */
+    int last_destroy = 0;      /* for debounce: only break on button press, not hold */
     trace("Server initialized\n");
     send_player_move(&player);
     send_player_rotation(&player);
@@ -107,10 +115,11 @@ void notmain() {
     trace("Welcome to Picraft! Ctrl+C to start playing.\n");
     while (1) {
         // pos_t new_pos = arcade_read(&player.position);
-        pos_t displacement = arcade_read();
-        int place = read_joystick(&player.rotation);
-        if (displacement.x || displacement.y || displacement.z) {
-            new_pos = player_next_move(&player, displacement);
+        pos_t *displacement = &(pos_t){0, 0, 0};
+        int destroy = read_move_joystick(displacement);
+        int place = read_camera_joystick(&player.rotation);
+        if (displacement->x || displacement->y || displacement->z) {
+            new_pos = player_next_move(&player, *displacement);
             fall_pos = new_pos;
             fall_pos.y -= 1;
             // check if player can fall down
@@ -134,18 +143,21 @@ void notmain() {
             send_player_rotation(&player);
             last_rot = player.rotation;
         }
-        if (place && !last_place) {
-            block_selected = BLOCK_AIR;
-            change_block(w, &player, block_selected);
+        block_t new_block = read_block();
+        if (new_block != 0) {
+            block_selected = new_block;
         }
-        last_place = place;
-        block_selected = read_block();
-        // trace("block_selected: %d\n", block_selected);
-        /* Only place on press (rising edge), not while held */
-        if (block_selected && block_selected != 16 && !last_block) {
+        if (destroy && !last_destroy) {
+            change_block(w, &player, BLOCK_AIR);
+        } else if (block_selected && place && block_selected != 16 && !last_block) {
+            /* Only place on press (rising edge), not while held */
             // updates w as well
             change_block(w, &player, block_selected);
+            last_block = block_selected;
+        } else {
+            last_block = BLOCK_AIR;
         }
+        last_destroy = destroy;
         if (block_selected == 16 && !last_block) {
             save_current_state(w, &player, 0, directory, &fs);
             world_print(w);
@@ -153,7 +165,6 @@ void notmain() {
             uart_put_str("DONE\n");
             return;
         }
-        last_block = block_selected;
         delay_ms(75);
         uart_flush_tx();
     }

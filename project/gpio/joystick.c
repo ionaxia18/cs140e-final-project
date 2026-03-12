@@ -18,23 +18,43 @@ int read_channel(spi_t s, uint8_t channel) {
     dev_barrier();
 }
 
-int read_joystick(p_rot_t* rot) {
+int read_camera_joystick(p_rot_t* rot) {
     dev_barrier();
-    int x  = read_channel(spi, 2) - 512;
-    int y  = -1 * (read_channel(spi, 1) - 512);
-    if (x > -60 && x < 60) x = 0;
-    if (y > -60 && y < 60) y = 0;
-    int sw = read_channel(spi, 0);
+    int cx = read_channel(spi, 2) - 512;
+    int cy = -1 * (read_channel(spi, 1) - 512);
+    if (cx > -60 && cx < 60) cx = 0;
+    if (cy > -60 && cy < 60) cy = 0;
+    int delete = read_channel(spi, 0);
     // need to normalize so it goes back to 0 when it reaches a certain value
-    x /= -100;
-    y /= -125;
-    rotation_increment(rot, x, y);
+    cx /= -100;
+    cy /= -125;
+    rotation_increment(rot, cx, cy);
     dev_barrier();
-    // trace("x: %d, y: %d, button: %d\n", x, y, sw < 512);
-    return (sw < 512);
-    // if (sw < 512) {
-    //     gpio_set_on(LED_PIN);
-    // } else {
-    //     gpio_set_off(LED_PIN);
-    // }
+    return (delete < 512);
+}
+
+int read_move_joystick(pos_t* pos) {
+    int mx = read_channel(spi, 7) - 512;
+    int mz = -1 * (read_channel(spi, 6) - 512);
+    int destroy = read_channel(spi, 5);
+
+    if (mx > -80 && mx < 80) mx = 0;
+    if (mz > -80 && mz < 80) mz = 0;
+    // trace("move displacement= %d, %d, place=%d\n", mx, mz, place);
+    // call function to move player
+    if (mx > 0) {
+        pos->x = 0.5;
+    } else if (mx < 0) {
+        pos->x = -0.5;
+    }
+
+    if (mz > 0) {
+        pos->z = -0.5;
+    } else if (mz < 0) {
+        pos->z = 0.5;
+    }
+    // trace("move displacement= %d, %d, %d, place=%d\n", pos->x != 0, pos->y != 0, pos->z != 0, destroy);
+    dev_barrier();
+    return destroy == 0;
+    // rotation_increment(rot, mx, my);
 }
