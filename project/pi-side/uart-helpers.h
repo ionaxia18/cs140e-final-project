@@ -14,5 +14,6 @@ void send_player_move(player_t* p);
 
 void send_player_rotation(player_t* p);
 
+void send_world(world_t *w) ;
 #endif // UART_HELPERS_H
 

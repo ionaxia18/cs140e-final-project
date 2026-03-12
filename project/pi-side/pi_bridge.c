@@ -4,7 +4,8 @@ static char heap[64 * 1500];
 static size_t heap_size = sizeof(heap);
 static void* heap_start = heap;
 #define BAUDRATE B115200
-
+// 2 for demo, 0 for flatworld
+int seed = 2;
 // takes in a character move, will move the player on pi side and return new coordinates
 
 void do_move(player_t* player, pos_t new_pos) {
@@ -60,7 +61,7 @@ void do_move(player_t* player, pos_t new_pos) {
 world_t* initialize_server() {
     /* static so it outlives this function - world->info points to it */
     static world_info_t info = {
-        .seed = 0,
+        .seed = 2,
         .min = (pos_t){-32, -59, -32},
         .max = (pos_t){32, -44, 32},
         .edits_cap = 2048,
@@ -111,7 +112,8 @@ void notmain() {
     send_player_move(&player);
     send_player_rotation(&player);
     uart_flush_tx();
-    world_print(w);
+    send_world(&w);
+    // world_print(w);
     trace("Welcome to Picraft! Ctrl+C to start playing.\n");
     while (1) {
         // pos_t new_pos = arcade_read(&player.position);

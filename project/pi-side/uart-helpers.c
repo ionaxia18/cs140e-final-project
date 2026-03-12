@@ -83,3 +83,18 @@ void send_player_rotation(player_t* p) {
     uart_put_int(p->rotation.pitch);
     uart_put_str("\n");
 }
+
+// sends world to fruitjuice so theyre synced
+void send_world(world_t *w) {
+    trace("sending world now\n");
+    for (uint32_t i = 0; i < w->edits.cap; i++) {
+        // trace("i = %d", i);
+        world_entry_t* cur = w->edits.entries[i];
+        while (cur) {
+            world_entry_t* next = cur->next;
+            send_set_block(next->pos, next->block);
+            cur = next;
+        }
+    }
+    trace("edit size=%d\n", w->edits.size);
+}
