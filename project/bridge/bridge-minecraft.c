@@ -21,6 +21,8 @@ enum {
     BLOCK_DIRT = 3,
     BLOCK_COBBLESTONE = 4,
     BLOCK_WOOD = 5,
+    BLOCK_GLOWSTONE = 6,
+    BLOCK_CAKE = 7,
     BLOCK_WATER = 8
 };
 
@@ -32,6 +34,8 @@ char *block_name(block_t b) {
         case BLOCK_DIRT: return "DIRT";
         case BLOCK_COBBLESTONE: return "COBBLESTONE";
         case BLOCK_WOOD: return "OAK_LOG";
+        case BLOCK_GLOWSTONE: return "GLOWSTONE";
+        case BLOCK_CAKE: return "CAKE";
         case BLOCK_WATER: return "WATER";
         default: return "UNKNOWN";
     }

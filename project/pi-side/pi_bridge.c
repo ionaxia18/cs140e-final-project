@@ -95,6 +95,7 @@ void notmain() {
 
     pi_dirent_t * directory = NULL;
     fat32_fs_t fs = initialize_fs(directory);
+    // gets world from file and sends to fruitjuice
     get_current_state(0, directory, &fs, w, &player);
     matrix_init();
     arcade_init();
@@ -112,8 +113,7 @@ void notmain() {
     send_player_move(&player);
     send_player_rotation(&player);
     uart_flush_tx();
-    send_world(&w);
-    // world_print(w);
+    world_print(w);
     trace("Welcome to Picraft! Ctrl+C to start playing.\n");
     while (1) {
         // pos_t new_pos = arcade_read(&player.position);

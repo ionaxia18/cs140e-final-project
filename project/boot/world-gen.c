@@ -1,6 +1,6 @@
 
 #include "world-gen.h"
-
+#include "constants.h"
 // Deterministic hash: same inputs produce same output
 static uint32_t hash2d(uint32_t seed, int16_t x, int16_t z) {
     uint32_t h = seed;
@@ -109,7 +109,46 @@ void write_flat_mtn_world(uint32_t seed, world_t * world) {
         }
     }
 }
+static const glyph_t *find_glyph(char c) {
+    for (unsigned i = 0; i < sizeof(font)/sizeof(font[0]); i++) {
+        if (font[i].c == c)
+            return &font[i];
+    }
+    return 0;
+}
+static void draw_char(world_t *world, char c, int start_x, int base_y, int z, block_t block) {
+    const glyph_t *g = find_glyph(c);
+    if (!g) return;
 
+    for (int row = 0; row < FONT_H; row++) {
+        for (int col = 0; col < FONT_W; col++) {
+            if (g->rows[row] & (1 << (FONT_W - 1 - col))) {
+                pos_t p = {
+                    .x = start_x + col,
+                    .y = base_y + (FONT_H - 1 - row),
+                    .z = z
+                };
+                world_set_block(world, p, block);
+            }
+        }
+    }
+}
+
+static void draw_text(world_t *world, const char *s, int start_x, int base_y, int z, block_t block) {
+    int x = start_x;
+    while (*s) {
+        draw_char(world, *s, x, base_y, z, block);
+        x += FONT_W + 1;   // 1 column spacing
+        s++;
+    }
+}
+
+void write_demo_world(uint32_t seed, world_t* world) {
+        // Write text near spawn (0, -60, 0)
+    // Raised slightly above ground so it is visible.
+    draw_text(world, "WELCOME TO", 2,  -54, 8, BLOCK_GLOWSTONE);
+    draw_text(world, "PICRAFT",    12, -61 + 8, 8, BLOCK_GLOWSTONE);
+}
 // void gen_flat_mtn_world(uint32_t seed) {
 //     char name[20];
 //     snprintk(name, sizeof(name), "%u", seed);

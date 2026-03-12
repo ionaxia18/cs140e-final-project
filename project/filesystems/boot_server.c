@@ -17,6 +17,7 @@
 
 char * filename0 = "SERVER0.BIN";
 char * filename1 = "SERVER1.BIN";
+char * filename2 = "SERVER2.BIN";
 
 file_t * save_game(world_t * world, player_t * player, uint32_t * out_size) {
     trace("saving game\n");
@@ -165,6 +166,9 @@ int create_boot_file(uint32_t seed, pi_dirent_t * root, fat32_fs_t * fs) {
     }
     if (seed == 1) {
         filename = filename1;
+    } 
+    if (seed == 2) {
+        filename = filename2;
     }
 
     pi_dirent_t * boot_file = fat32_stat(fs, root, filename);
@@ -189,8 +193,11 @@ int create_boot_file(uint32_t seed, pi_dirent_t * root, fat32_fs_t * fs) {
         return 0;
     }
 
-    if (seed != 0) {
+    if (seed == 1) {
         write_flat_mtn_world(seed, w);
+    }
+    if (seed == 2) {
+        write_demo_world(seed, w);
     }
 
     player_t player = {.player_id = 0,
@@ -219,13 +226,16 @@ int create_boot_file(uint32_t seed, pi_dirent_t * root, fat32_fs_t * fs) {
     return 1;
 }
 
-int get_current_state(uint32_t seed,  pi_dirent_t * root, fat32_fs_t * fs, world_t * world, player_t * player) {
+int get_current_state(uint32_t seed, pi_dirent_t * root, fat32_fs_t * fs, world_t * world, player_t * player) {
   char * filename = "";
     if (seed == 0) {
         filename = filename0;
     }
     if (seed == 1) {
         filename = filename1;
+    }
+    if (seed = 2) {
+        filename = filename2;
     }
     create_boot_file(seed, root, fs);
     pi_file_t *new_file = fat32_read(fs, root, filename);

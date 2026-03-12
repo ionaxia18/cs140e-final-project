@@ -14,6 +14,8 @@ enum {
     BLOCK_DIRT = 3,
     BLOCK_COBBLESTONE = 4,
     BLOCK_WOOD = 5,
+    BLOCK_GLOWSTONE = 6,
+    BLOCK_CAKE = 7,
     BLOCK_WATER = 8
 };
 
