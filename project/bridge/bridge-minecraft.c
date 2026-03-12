@@ -141,9 +141,17 @@ int main() {
     }
     printf("sock created\n");
 
-    int pi_fd = setup_pi_connection(PI_PORT);
+    const char *ports[] = { PI_PORT, "/dev/cu.SLAB_USBtoUART", "/dev/cu.usbserial-110", NULL };
+    int pi_fd = -1;
+    for (int i = 0; ports[i] && pi_fd < 0; i++) {
+        pi_fd = setup_pi_connection(ports[i]);
+        if (pi_fd >= 0) {
+            printf("opened %s\n", ports[i]);
+            break;
+        }
+    }
     if (pi_fd < 0) {
-        printf("error pi_fd not created\n");
+        printf("error: cannot open any serial port. Close pi-install or other serial programs.\n");
         return 1;
     }
     printf("pi_fd created");
@@ -192,8 +200,12 @@ int main() {
                     send_player_rotation(sock, rp, ry);
                     printf("send player rotation %d %d\n", rp, ry);
                 }
+            } else if (sscanf(buffer, "%15s", cmd) == 1) {
+                if (strcmp(cmd, "DONE") == 0) {
+                    printf("See you next time!\n");
+                    break;
+                }
             }
-
         } else {
             if (buf_idx < sizeof(buffer) - 1) {
                 if (!(c == ' ' || c == '-' || (c >= '0' && c <= '9') ||

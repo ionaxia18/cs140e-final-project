@@ -11,6 +11,7 @@ ARM := arm-none-eabi
 CC  := $(ARM)-gcc
 
 CFLAGS := -O -Wall -Wno-unused-variable -std=gnu99
+CFLAGS += -DTRACE_OFF  # UART carries ROT/BLOCK/PLAYER protocol - trace would corrupt it
 CFLAGS += -nostdlib -nostartfiles -ffreestanding
 CFLAGS += -mcpu=arm1176jzf-s -mno-unaligned-access
 CFLAGS += -I$(LIBPI)/include -I$(LIBPI)/libc -I.. -I../world-state -I../heap -I../gpio -I../filesystems -I../boot
@@ -37,7 +38,15 @@ PROG_OBJ   := objs/$(PROG).o
 
 ALL_OBJS := $(PROG_OBJ) $(WORLD_OBJS) $(GPIO_OBJS) $(FS_OBJS) $(BOOT_OBJS) $(EXTERNAL_OBJS) $(ALLOC_OBJ) $(UART_OBJS) $(STAFF_KMALLOC)
 
-all: $(PROG_BIN)
+all: $(PROG_BIN) delete.bin
+
+# Build delete program (deletes SERVER0.BIN from SD card)
+delete.bin: objs/delete.o $(WORLD_OBJS) $(GPIO_OBJS) $(FS_OBJS) $(BOOT_OBJS) $(EXTERNAL_OBJS) $(ALLOC_OBJ) $(UART_OBJS) $(STAFF_KMALLOC) $(START) $(LPI) $(MEMMAP)
+	$(CC) $(CFLAGS) $(START) objs/delete.o $(WORLD_OBJS) $(GPIO_OBJS) $(FS_OBJS) $(BOOT_OBJS) $(EXTERNAL_OBJS) $(ALLOC_OBJ) $(UART_OBJS) $(STAFF_KMALLOC) -T $(MEMMAP) $(LPI) -lgcc -o delete.elf
+	$(ARM)-objcopy delete.elf -O binary delete.bin
+
+run-delete: delete.bin
+	pi-install delete.bin
 
 objs/%.o: %.c
 	@mkdir -p $(dir $@)
@@ -80,6 +89,6 @@ run: $(PROG_BIN)
 
 clean:
 	rm -rf objs
-	rm -f *.bin *.elf *.list *~
+	rm -f *.bin *.elf *.list *~ delete.bin delete.elf
 
-.PHONY: all clean run
+.PHONY: all clean run run-delete

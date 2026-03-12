@@ -1,22 +1,4 @@
-// #include "pi_bridge.h"
-// #include "pi_bridge.h"
-#include "../../libpi/rpi.h"
-#include "../constants.h"
-// #include "../world-state/world.h"
-#include "../world-state/player.h"
-#include "../boot/world-gen.h"
-#include "../world-state/pending.h"
-#include "../world-state/hashtable.h"
-
-
-#include "../gpio/arcade.h"
-#include "../gpio/joystick.h"
-#include "../gpio/matrix.h"
-
-
-#include "uart-helpers.h"
-#include "../filesystems/boot_server.h"
-#include "../heap/allocator.h"
+#include "pi_bridge.h"
 
 static char heap[64 * 1500];
 static size_t heap_size = sizeof(heap);
@@ -101,9 +83,9 @@ void notmain() {
     myinit(heap_start, heap_size);
     world_t* w = initialize_server();
 
-    // pi_dirent_t * directory = NULL;
-    // fat32_fs_t fs = initialize_fs(directory);
-    // get_current_state(0, directory, &fs, w, &player);
+    pi_dirent_t * directory = NULL;
+    fat32_fs_t fs = initialize_fs(directory);
+    get_current_state(0, directory, &fs, w, &player);
 
     matrix_init();
     arcade_init();
@@ -122,6 +104,7 @@ void notmain() {
     send_player_rotation(&player);
     uart_flush_tx();
     world_print(w);
+    trace("Welcome to Picraft! Ctrl+C to start playing.\n");
     while (1) {
         // pos_t new_pos = arcade_read(&player.position);
         pos_t displacement = arcade_read();
@@ -157,23 +140,21 @@ void notmain() {
         }
         last_place = place;
         block_selected = read_block();
+        // trace("block_selected: %d\n", block_selected);
         /* Only place on press (rising edge), not while held */
         if (block_selected && block_selected != 16 && !last_block) {
             // updates w as well
             change_block(w, &player, block_selected);
         }
         if (block_selected == 16 && !last_block) {
+            save_current_state(w, &player, 0, directory, &fs);
+            world_print(w);
             world_destroy(w);
+            uart_put_str("DONE\n");
             return;
         }
         last_block = block_selected;
-        // this is placing with joystick, replace with placing with matrix
-        // if (!place) {
-        //     uart_put_str("   ");
-        //     change_block('p', w, &player);
-        // }
-        delay_ms(50);
+        delay_ms(75);
         uart_flush_tx();
     }
-    // save_current_state(w, &player, 0, directory, &fs);
 }

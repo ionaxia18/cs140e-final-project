@@ -5,7 +5,7 @@
 #include "../boot/world-gen.h"
 
 void print_pos(pos_t p) {
-    trace("position at x=%d, y=%d, z=%d\n", p.x, p.y, p.z);
+    trace("position at x=%d, y=%d, z=%d\n", (int)p.x, (int)p.y, (int)p.z);
 }
 static char heap[64 * 1500];
 static size_t heap_size = sizeof(heap);
@@ -18,7 +18,7 @@ void world_print(world_t* w) {
         while (cur) {
             world_entry_t* next = cur->next;
             print_pos(cur->pos);
-            trace("block is %d", cur->block);
+            trace("block is %d\n", (int)cur->block);
             cur = next;
         }
     }
@@ -26,14 +26,15 @@ void world_print(world_t* w) {
 
 }
 world_key_t world_make_key(pos_t p) {
+
     // Cast to int first to preserve sign
-    int16_t ix = (int16_t)p.x;
-    int16_t iy = (int16_t)p.y;
-    int16_t iz = (int16_t)p.z;
+    int16_t ix = (int16_t)(p.x < -512 ? -512 : (p.x > 511 ? 511 : p.x));
+    int16_t iy = (int16_t)(p.y < -512 ? -512 : (p.y > 511 ? 511 : p.y));
+    int16_t iz = (int16_t)(p.z < -512 ? -512 : (p.z > 511 ? 511 : p.z));
     uint32_t ux = (uint32_t)(ix + 512) & 0x3ff;
     uint32_t uy = (uint32_t)(iy + 512) & 0x3ff;
     uint32_t uz = (uint32_t)(iz + 512) & 0x3ff;
-    return (ux << 20) | (uy << 10) | uz;
+    return (ux << 20) | (uy << 10) | iz;
 }
 
 pos_t world_read_key(world_key_t k){

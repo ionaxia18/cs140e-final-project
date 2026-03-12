@@ -3,7 +3,7 @@
 
 // change to be ur pi port name, can find with 
 // ls /dev/cu.*
-#define PI_PORT "/dev/cu.usbserial-210"
+#define PI_PORT "/dev/cu.usbserial-110"
 static const float sin_q[91] = {
     0.000000000f,
     0.017452406f,

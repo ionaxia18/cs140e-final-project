@@ -2,6 +2,7 @@
 #include "fat32.h"
 #include "fat32-helpers.h"
 #include "pi-sd.h"
+#include "boot_server.h"
 
 // Print extra tracing info when this is enabled.  You can and should add your
 // own.
@@ -15,7 +16,9 @@ fat32_fs_t fat32_mk(mbr_partition_ent_t *partition) {
   demand(!init_p, "the fat32 module is already in use\n");
   // TODO: Read the boot sector (of the partition) off the SD card.
   boot_sector = *(fat32_boot_sec_t *)(pi_sec_read(partition->lba_start, 1));
+#ifndef TRACE_OFF
   printk("here");
+#endif
   // TODO: Verify the boot sector (also called the volume id, `fat32_volume_id_check`)
   fat32_volume_id_check(&boot_sector);
   
@@ -263,6 +266,27 @@ pi_file_t *fat32_read(fat32_fs_t *fs, pi_dirent_t *directory, char *filename) {
   // }
 
   pi_dirent_t * dirent = fat32_stat(fs, directory, filename);
+
+  // Empty files have cluster_id 0 or 1 (FAT32 reserved); return default file_t
+  if (dirent->cluster_id < 2 || dirent->nbytes == 0) {
+    file_t *default_file = kmalloc(sizeof(file_t));
+    memset(default_file, 0, sizeof(file_t));
+    default_file->player.player_id = 0;
+    default_file->player.position = (pos_t){0, -59, 0};
+    default_file->player.rotation = (p_rot_t){0, 0};
+    default_file->info.seed = 0;
+    default_file->info.min = (pos_t){0, -60, 0};
+    default_file->info.max = (pos_t){16, -44, 16};
+    default_file->info.edits_cap = 2048;
+    default_file->info.pending_cap = 1024;
+    pi_file_t *file = kmalloc(sizeof(pi_file_t));
+    *file = (pi_file_t) {
+      .data = (char *)default_file,
+      .n_data = sizeof(file_t),
+      .n_alloc = sizeof(file_t),
+    };
+    return file;
+  }
 
   // TODO: figure out the length of the cluster chain
   uint32_t length = get_cluster_chain_length(fs, dirent->cluster_id);

@@ -26,14 +26,8 @@ file_t * save_game(world_t * world, player_t * player, uint32_t * out_size) {
 
     file_info->player = *player;
     file_info->info = *world->info;
-    file_info->pending_size = world->pending.size;
-
-    for (uint32_t i = 0; i < world->pending.size; i++) {
-        file_info->pending_blocks[i].block = world->pending.entries[i].block;
-        file_info->pending_blocks[i].pos = world->pending.entries[i].pos;
-        // file_info->pending_blocks[i].full = world->pending.entries[i].full;
-        file_info->pending_indices[i] = world->pending.indices[i];
-    }
+    /* Only save edits - pending_add is stubbed and pending is always empty */
+    file_info->pending_size = 0;
 
     uint32_t count = 0;
     trace("reached here\n");
@@ -74,7 +68,7 @@ void load_game(file_t *file_info, struct world *world, player_t *player) {
 
     world->pending.size = 0;
     world->pending.cap = MAX_PENDING;
-    trace("currently here\n");
+    // trace("currently here\n");
     for (uint32_t i = 0; i < file_info->pending_size; i++) {
         flat_entry_t *f = &file_info->pending_blocks[i];
         
@@ -90,32 +84,39 @@ void load_game(file_t *file_info, struct world *world, player_t *player) {
         }
     }
 
-    trace("currently here now\n");
+    // trace("currently here now\n");
     for (uint32_t i = 0; i < world->edits.cap; i++) {
         world->edits.entries[i] = NULL;
     }
     world->edits.size = 0;
     // world->edits.cap = MAX_EDITS;
 
-    trace("currently hereee\n");
+    // trace("currently hereee\n");
     for (uint32_t i = 0; i < file_info->edits_size; i++) {
         pos_t pos = file_info->edit_blocks[i].pos;
+        block_t block = file_info->edit_blocks[i].block;
+        /* Skip invalid entries (corruption or padding) */
+        if (!world_pos_is_valid(pos) || block > BLOCK_WATER) {
+            trace("skipping invalid edit %d: pos=(%d,%d,%d) block=%d\n",
+                  i, (int)pos.x, (int)pos.y, (int)pos.z, (int)block);
+            continue;
+        }
         trace("setting entry %d\n", i);
-        table_set_entry(&world->edits, 
-                        file_info->edit_blocks[i].block, 
-                        file_info->edit_blocks[i].pos);
+        table_set_entry(&world->edits, block, pos);
+        uart_put8('\r');
         uart_put_str("BLOCK");
         uart_put8(' ');
-        uart_put_int(pos.x);
+        uart_put_int((int)pos.x);
         uart_put8(' ');
-        uart_put_int(pos.y);
+        uart_put_int((int)pos.y);
         uart_put8(' ');
-        uart_put_int(pos.z);
+        uart_put_int((int)pos.z);
         uart_put8(' ');
-        uart_put_int(file_info->edit_blocks[i].block);
+        uart_put_int(block);
         uart_put8('\n');
-        trace("sent BLOCK %d %d %d %d\n", (int)pos.x, (int)pos.y, (int)pos.z, (int)file_info->edit_blocks[i].block);
+        trace("sent BLOCK %d %d %d %d\n", (int)pos.x, (int)pos.y, (int)pos.z, (int)block);
     }
+    uart_put8('\r');
     uart_put_str("PLAYER ");
     uart_put_int(player->position.x);
     uart_put_str(" ");
@@ -129,19 +130,29 @@ void load_game(file_t *file_info, struct world *world, player_t *player) {
 fat32_fs_t initialize_fs(pi_dirent_t * directory) {
     kmalloc_init_mb(FAT32_HEAP_MB);
     pi_sd_init();
+    /* Give SD card time to be ready - critical when run immediately after delete.bin */
+    delay_ms(200);
 
+#ifndef TRACE_OFF
     printk("Reading the MBR.\n");
+#endif
     mbr_t *mbr = mbr_read();
 
+#ifndef TRACE_OFF
     printk("Loading the first partition.\n");
+#endif
     mbr_partition_ent_t partition;
     memcpy(&partition, mbr->part_tab1, sizeof(mbr_partition_ent_t));
     assert(mbr_part_is_fat32(partition.part_type));
 
+#ifndef TRACE_OFF
     printk("Loading the FAT.\n");
+#endif
     fat32_fs_t fs = fat32_mk(&partition);
 
+#ifndef TRACE_OFF
     printk("Loading the root directory.\n");
+#endif
     pi_dirent_t root = fat32_get_root(&fs);
     *directory = root;
     return fs;
@@ -158,7 +169,9 @@ int create_boot_file(uint32_t seed, pi_dirent_t * root, fat32_fs_t * fs) {
 
     pi_dirent_t * boot_file = fat32_stat(fs, root, filename);
     if (boot_file != NULL) {
+#ifndef TRACE_OFF
         printk("File already exists\n");
+#endif
         return 0;
     }
 
@@ -187,6 +200,9 @@ int create_boot_file(uint32_t seed, pi_dirent_t * root, fat32_fs_t * fs) {
 
     assert(fat32_create(fs, root, filename, 0));
 
+    /* SD card needs time to settle after create; avoids hang on delete-then-remake */
+    delay_ms(300);
+
     uint32_t out_size = 0;
     file_t * result = save_game(w, &player, &out_size);
 
@@ -196,6 +212,7 @@ int create_boot_file(uint32_t seed, pi_dirent_t * root, fat32_fs_t * fs) {
         .n_alloc = out_size
     };
     trace("about to save\n");
+    delay_ms(100);  /* extra settle before write - first run after delete is flaky */
     assert(fat32_write(fs, root, filename, &file_save));
     trace("saved game\n");
     myfree(result);
@@ -229,10 +246,14 @@ int save_current_state(world_t * world, player_t * player, uint32_t seed, pi_dir
     // mymalloc(FAT32_HEAP_MB);
     pi_dirent_t * boot_file = fat32_stat(fs, root, filename);
     if (boot_file == NULL) {
+#ifndef TRACE_OFF
         printk("File doesn't exist\n");
+#endif
         return 0;
     }
+#ifndef TRACE_OFF
     printk("Creating BOOT_SERVER.bin\n");
+#endif
     uint32_t out_size = 0;
     file_t * result = save_game(world, player, &out_size);
     pi_file_t file_save = {

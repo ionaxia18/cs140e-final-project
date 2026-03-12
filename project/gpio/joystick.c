@@ -20,8 +20,8 @@ int read_channel(spi_t s, uint8_t channel) {
 
 int read_joystick(p_rot_t* rot) {
     dev_barrier();
-    int x  = read_channel(spi, 1) - 512;
-    int y  = read_channel(spi, 2) - 512;
+    int x  = read_channel(spi, 2) - 512;
+    int y  = -1 * (read_channel(spi, 1) - 512);
     if (x > -60 && x < 60) x = 0;
     if (y > -60 && y < 60) y = 0;
     int sw = read_channel(spi, 0);
