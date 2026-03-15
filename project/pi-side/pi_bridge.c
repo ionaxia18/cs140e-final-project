@@ -5,7 +5,7 @@ static size_t heap_size = sizeof(heap);
 static void* heap_start = heap;
 #define BAUDRATE B115200
 // 2 for demo, 0 for flatworld
-int seed = 2;
+int seed = 0;
 // takes in a character move, will move the player on pi side and return new coordinates
 
 void do_move(player_t* player, pos_t new_pos) {
@@ -61,7 +61,7 @@ void do_move(player_t* player, pos_t new_pos) {
 world_t* initialize_server() {
     /* static so it outlives this function - world->info points to it */
     static world_info_t info = {
-        .seed = 2,
+        .seed = 0,
         .min = (pos_t){-32, -59, -32},
         .max = (pos_t){32, -44, 32},
         .edits_cap = 2048,
@@ -96,7 +96,7 @@ void notmain() {
     pi_dirent_t * directory = NULL;
     fat32_fs_t fs = initialize_fs(directory);
     // gets world from file and sends to fruitjuice
-    get_current_state(0, directory, &fs, w, &player);
+    // get_current_state(0, directory, &fs, w, &player);
     matrix_init();
     arcade_init();
     joystick_init();
@@ -151,7 +151,7 @@ void notmain() {
         }
         if (destroy && !last_destroy) {
             change_block(w, &player, BLOCK_AIR);
-        } else if (block_selected && place && block_selected != 16 && !last_block) {
+        } else if (block_selected && place && block_selected != 16 && !last_block && block_selected != 15) {
             /* Only place on press (rising edge), not while held */
             // updates w as well
             change_block(w, &player, block_selected);
@@ -166,6 +166,10 @@ void notmain() {
             world_destroy(w);
             uart_put_str("DONE\n");
             return;
+        } else if (block_selected == 15 && !last_block) {
+            get_current_state(0, directory, &fs, w, &player);
+            last_block = BLOCK_AIR;
+            block_selected = BLOCK_AIR;
         }
         delay_ms(75);
         uart_flush_tx();

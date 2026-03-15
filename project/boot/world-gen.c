@@ -1,6 +1,7 @@
 
 #include "world-gen.h"
 #include "constants.h"
+#include "../pi-side/uart-helpers.h"
 // Deterministic hash: same inputs produce same output
 static uint32_t hash2d(uint32_t seed, int16_t x, int16_t z) {
     uint32_t h = seed;
@@ -129,6 +130,7 @@ static void draw_char(world_t *world, char c, int start_x, int base_y, int z, bl
                     .z = z
                 };
                 world_set_block(world, p, block);
+                send_set_block(p, block);
             }
         }
     }
@@ -146,8 +148,8 @@ static void draw_text(world_t *world, const char *s, int start_x, int base_y, in
 void write_demo_world(uint32_t seed, world_t* world) {
         // Write text near spawn (0, -60, 0)
     // Raised slightly above ground so it is visible.
-    draw_text(world, "WELCOME TO", 2,  -54, 8, BLOCK_GLOWSTONE);
-    draw_text(world, "PICRAFT",    12, -61 + 8, 8, BLOCK_GLOWSTONE);
+    draw_text(world, "WELCOME TO", 2,  -54, 8, BLOCK_STONE);
+    draw_text(world, "PICRAFT",    12, -61 + 8, 8, BLOCK_STONE);
 }
 // void gen_flat_mtn_world(uint32_t seed) {
 //     char name[20];

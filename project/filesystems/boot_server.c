@@ -109,7 +109,7 @@ void load_game(file_t *file_info, struct world *world, player_t *player) {
         uart_put8(' ');
         uart_put_int((int)pos.x);
         uart_put8(' ');
-        uart_put_int((int)pos.y);
+        uart_put_int((int)pos.y - 1);
         uart_put8(' ');
         uart_put_int((int)pos.z);
         uart_put8(' ');
@@ -234,7 +234,7 @@ int get_current_state(uint32_t seed, pi_dirent_t * root, fat32_fs_t * fs, world_
     if (seed == 1) {
         filename = filename1;
     }
-    if (seed = 2) {
+    if (seed == 2) {
         filename = filename2;
     }
     create_boot_file(seed, root, fs);

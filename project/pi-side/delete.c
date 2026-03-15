@@ -12,10 +12,11 @@ void notmain(void) {
     pi_dirent_t root;
     fat32_fs_t fs = initialize_fs(&root);
 
-    int deleted = delete_boot_file(0, &root, &fs);
+    int delete = delete_boot_file(0, &root, &fs);
+    int deleted = delete_boot_file(2, &root, &fs);
     if (deleted) {
-        printk("Deleted SERVER0.BIN\n");
+        printk("Deleted SERVER2.BIN\n");
     } else {
-        printk("SERVER0.BIN not found or already deleted\n");
+        printk("SERVER2.BIN not found or already deleted\n");
     }
 }
