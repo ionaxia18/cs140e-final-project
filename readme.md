@@ -5,7 +5,9 @@
 
 ## Overview:
 Our project is Picraft, a system where a Raspberry Pi runs a game server that controls a Minecraft world. The Pi uses physical hardware for input, stores world state on our SD card, and talks to a Minecraft plugin over UART and TCP to display the changes to the server visually.   
- 
+
+<img width="1353" height="564" alt="Data flow in Minecraft bridge system" src="https://github.com/user-attachments/assets/38dca9d1-e98f-4fa1-9fbd-b6f0a335e791" />
+
 ## Programs:
 Two main bridge programs facilitate the communication between the Pi and Minecraft’s FruitJuice plugin, with the Pi running one program and the laptop running the other.
 
