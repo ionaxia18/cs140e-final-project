@@ -1,6 +1,8 @@
 # Picraft
 **Clara Wang, Erika Li, Iona Xia**  
 
+[Video Demo](https://drive.google.com/file/d/1fVVa6dfv8KzZIKBdKGQ1rL_hryTVF_Vg/view?usp=drive_link)
+
 ## Overview:
 Our project is Picraft, a system where a Raspberry Pi runs a game server that controls a Minecraft world. The Pi uses physical hardware for input, stores world state on our SD card, and talks to a Minecraft plugin over UART and TCP to display the changes to the server visually.   
  
