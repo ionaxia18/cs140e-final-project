@@ -1,3 +1,4 @@
+// DEPRECATED, USED FOR MOVING PLAYER, BUT SWITCHED TO JOYSTICK. SEE joystick.c
 #include "arcade.h"
 
 void arcade_init(void) {

@@ -24,15 +24,16 @@ int read_camera_joystick(p_rot_t* rot) {
     int cy = -1 * (read_channel(spi, 6) - 512);
     if (cx > -60 && cx < 60) cx = 0;
     if (cy > -60 && cy < 60) cy = 0;
-    int delete = read_channel(spi, 5);
-    // need to normalize so it goes back to 0 when it reaches a certain value
+    int place = read_channel(spi, 5);
+
     cx /= -100;
     cy /= -125;
     rotation_increment(rot, cx, cy);
     // trace("move displacement= %d, %d, place=%d\n", cx, cy, delete);
 
     dev_barrier();
-    return (delete < 512);
+    // returns if joystick button was pressed
+    return (place < 512);
 }
 
 int read_move_joystick(pos_t* pos) {
@@ -43,7 +44,8 @@ int read_move_joystick(pos_t* pos) {
     if (mx > -80 && mx < 80) mx = 0;
     if (mz > -80 && mz < 80) mz = 0;
     // trace("move displacement= %d, %d, %d, place=%d\n", pos->x, pos->y, pos->z, destroy);
-    // call function to move player
+    
+    // changes pos to track player displacement, scale to desiredplayer speed
     if (mx > 0) {
         pos->x = 0.5;
     } else if (mx < 0) {
@@ -57,6 +59,6 @@ int read_move_joystick(pos_t* pos) {
     }
     // trace("move displacement= %d, %d, %d, place=%d\n", pos->x != 0, pos->y != 0, pos->z != 0, destroy);
     dev_barrier();
+    // returns if joystick button was pressed
     return destroy < 512;
-    // rotation_increment(rot, mx, my);
 }

@@ -4,19 +4,8 @@ static char heap[64 * 1500];
 static size_t heap_size = sizeof(heap);
 static void* heap_start = heap;
 #define BAUDRATE B115200
-// 0 for flatworld
-int seed = 0;
-// takes in a character move, will move the player on pi side and return new coordinates
 
-void do_move(player_t* player, pos_t new_pos) {
-    if (!world_pos_is_valid(new_pos)) {
-        panic("invalid move to position %d %d %d", new_pos.x, new_pos.y, new_pos.z);
-    } 
-    player->position = new_pos;
-    send_player_move(player);
-}
-
- void change_block(world_t* w, player_t* player, block_t block_selected) {
+void change_block(world_t* w, player_t* player, block_t block_selected) {
     pos_t hit;
     pos_t place;
 
@@ -52,6 +41,7 @@ void do_move(player_t* player, pos_t new_pos) {
 world_t* initialize_server() {
     /* static so it outlives this function - world->info points to it */
     static world_info_t info = {
+        // 0 for flatworld
         .seed = 0,
         .min = (pos_t){-32, -59, -32},
         .max = (pos_t){32, -44, 32},
@@ -65,10 +55,6 @@ world_t* initialize_server() {
         return w;
     }
     return w;
-}
-
-bool position_changed(pos_t cur, pos_t old) {
-    return (cur.x != old.x) || (cur.y != old.y) || (cur.z != old.z);
 }
 
 bool rotation_changed(p_rot_t cur, p_rot_t old) {
