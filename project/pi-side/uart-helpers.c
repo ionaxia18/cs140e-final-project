@@ -110,7 +110,7 @@ void send_world(world_t *w) {
         world_entry_t* cur = w->edits.entries[i];
         while (cur) {
             world_entry_t* next = cur->next;
-            send_set_block(next->pos, next->block);
+            send_set_block(cur->pos, cur->block);
             cur = next;
         }
     }

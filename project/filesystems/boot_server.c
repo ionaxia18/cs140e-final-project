@@ -196,9 +196,6 @@ int create_boot_file(uint32_t seed, pi_dirent_t * root, fat32_fs_t * fs) {
     if (seed == 1) {
         write_flat_mtn_world(seed, w);
     }
-    if (seed == 2) {
-        write_demo_world(seed, w);
-    }
 
     player_t player = {.player_id = 0,
         .position = (pos_t) {0, -60, 0},

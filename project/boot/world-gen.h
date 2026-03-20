@@ -18,7 +18,3 @@ block_t flat_world(pos_t p);
 void create_world_file(char *name, fat32_fs_t *fs, pi_dirent_t *root);
 void gen_flat_mtn_world(uint32_t seed);
 void write_flat_mtn_world(uint32_t seed, world_t * world);
-static const glyph_t *find_glyph(char c);
-static void draw_char(world_t *world, char c, int start_x, int base_y, int z, block_t block) ;
-static void draw_text(world_t *world, const char *s, int start_x, int base_y, int z, block_t block);
-void write_demo_world(uint32_t seed, world_t* world) ;
