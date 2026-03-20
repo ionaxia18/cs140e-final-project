@@ -14,6 +14,9 @@
 #define PLUGIN_PORT 4711
 #define BAUDRATE    B115200
 
+// Maps Pi/world block IDs to FruitJuice material names used in setBlock().
+// Unknown IDs are passed through as "UNKNOWN" so malformed protocol input
+// is visible in logs instead of silently using an arbitrary block.
 char *block_name(block_t b) {
     switch (b) {
         case BLOCK_AIR: return "AIR";
@@ -29,7 +32,8 @@ char *block_name(block_t b) {
     }
 }
 
-// setup tcp function so that it can be used to talk to fruitjuice plugin
+// Opens a direct TCP connection to a local FruitJuice server.
+// Returns a connected socket fd on success, -1 on failure.
 int connect_to_fruitjuice(const char * ip, int port) {
     int sock = socket(AF_INET, SOCK_STREAM, 0);
     printf("sock int created");
@@ -49,6 +53,9 @@ int connect_to_fruitjuice(const char * ip, int port) {
     return sock;
 }
 
+// Resolves host:port with getaddrinfo() and connects over TCP.
+// Used for remote bridges (for example, an ngrok TCP tunnel).
+// Returns a connected socket fd on success, -1 on failure.
 int connect_to_fruitjuice_ngrok(const char *host, int port) {
     int sock;
     struct addrinfo hints, *res;
@@ -82,18 +89,23 @@ int connect_to_fruitjuice_ngrok(const char *host, int port) {
     return sock;
 }
 
+// Formats and sends one world.setBlock(x,y,z,block) command over TCP.
 void put_block(int sock, int x, int y, int z, char* block) {
     char buf[128];
     sprintf(buf, "world.setBlock(%d,%d,%d,%s)\n", x, y, z, block);
     send(sock, buf, strlen(buf), 0);
 }
 
+// Formats and sends one player.setPos(x,y,z) command over TCP.
 void move_player(int sock, float x, float y, float z) {
     char buf[128];
     sprintf(buf, "player.setPos(%f,%f,%f)\n", x, y, z);
     send(sock, buf, strlen(buf), 0);
 }        
 
+// Sends camera orientation updates to Minecraft as:
+// - player.setRotation(yaw)
+// - player.setPitch(pitch)
 void send_player_rotation(int sock, int dx, int dy) {
     char buf[128];
     sprintf(buf, "player.setRotation(%d)\n", dx);
@@ -102,6 +114,8 @@ void send_player_rotation(int sock, int dx, int dy) {
     send(sock, buf, strlen(buf), 0);
 }
 
+// Opens and configures the serial link used to receive Pi protocol lines.
+// Port is set to raw mode at BAUDRATE for line-oriented BLOCK/PLAYER/ROT IO.
 int setup_pi_connection(const char * device) {
     int fd = open(device, O_RDWR | O_NOCTTY);
     if (fd < 0) {
@@ -119,6 +133,13 @@ int setup_pi_connection(const char * device) {
     return fd;
 }
 
+// Host bridge entrypoint.
+// Connects to FruitJuice, opens the first available serial device, then
+// continuously parses UART lines from the Pi and forwards each message type:
+// - BLOCK -> world.setBlock
+// - PLAYER -> player.setPos
+// - ROT -> setRotation/setPitch
+// - DONE -> graceful loop exit
 int main() {
     // use if fruitjuice running directly on this comptuer, specify PLUGIN_PORT
     // int sock = connect_to_fruitjuice(PLUGIN_IP, PLUGIN_PORT);

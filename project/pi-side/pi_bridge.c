@@ -5,6 +5,11 @@ static size_t heap_size = sizeof(heap);
 static void* heap_start = heap;
 #define BAUDRATE B115200
 
+// Attempts one interaction edit from the player's current camera direction.
+// - If block_selected == BLOCK_AIR, this breaks the first solid block hit.
+// - Otherwise, it places block_selected in the nearest air cell before the hit.
+// The function rejects edits that would place into the player's body and only
+// sends UART output after world_set_block succeeds.
 void change_block(world_t* w, player_t* player, block_t block_selected) {
     pos_t hit;
     pos_t place;
@@ -38,6 +43,9 @@ void change_block(world_t* w, player_t* player, block_t block_selected) {
     send_set_block(target, block_selected);
 }
 
+// Creates the in-memory world state used by the main control loop.
+// Bounds and table capacities are centralized here so tuning world size or
+// memory footprint stays in one place.
 world_t* initialize_server() {
     /* static so it outlives this function - world->info points to it */
     static world_info_t info = {
@@ -57,10 +65,18 @@ world_t* initialize_server() {
     return w;
 }
 
+// Returns true when yaw or pitch changed since the previous loop iteration.
+// Used to avoid spamming ROT messages when the camera is stationary.
 bool rotation_changed(p_rot_t cur, p_rot_t old) {
     return (cur.pitch != old.pitch) || (cur.yaw != old.yaw);
 }
 
+// Pi program entrypoint.
+// Initializes allocator/world/hardware, then runs the control loop that:
+// 1) reads movement + camera input,
+// 2) applies movement/collision + block edits,
+// 3) streams PLAYER/ROT/BLOCK messages to the host bridge over UART.
+// Keypad 15 restores saved world; keypad 16 saves and exits.
 void notmain() {
     player_t player = {
         .player_id = 0,

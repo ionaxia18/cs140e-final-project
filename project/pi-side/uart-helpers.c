@@ -1,6 +1,8 @@
 #include "../../libpi/rpi.h"
 #include "uart-helpers.h"
 
+// Serializes a signed integer to ASCII and writes it byte-by-byte on UART.
+// This avoids stdlib formatting and keeps protocol output deterministic.
 void uart_put_int(int val) {
     char buf[12];              // enough for -2147483648 + '\0'
     int i = 0;
@@ -27,6 +29,8 @@ void uart_put_int(int val) {
     }
 }
 
+// Serializes a float as "<int>[.<3 digits>]" and writes it on UART.
+// Current protocol precision is fixed at 3 decimal places.
 void uart_put_float(float f) {
     if (f < 0) {
         uart_put8('-');
@@ -49,12 +53,17 @@ void uart_put_float(float f) {
         frac -= digit;
     }
 }
+// Writes a null-terminated C string directly to UART.
 void uart_put_str(char* str) {
     for (int i = 0; str[i] != '\0'; i++) {
         uart_put8(str[i]);
     }
 }
 
+// Emits one BLOCK protocol line:
+//   BLOCK <x> <y-1> <z> <block_id>\n
+// The y-1 transform keeps host-side coordinates aligned with FruitJuice's
+// interpretation of player/world height.
 void send_set_block(pos_t p, block_t new_block) {
     uart_put_str("BLOCK ");
     uart_put_float(p.x);
@@ -68,7 +77,9 @@ void send_set_block(pos_t p, block_t new_block) {
     uart_put8('\n');
 }
 
-// assumes position is valid, id not being used, unsure how fruitjuice likes it
+// Emits one PLAYER protocol line:
+//   PLAYER <x> <y-1> <z>\n
+// The y-1 transform matches the same convention used by send_set_block().
 void send_player_move(player_t* p) {
     uart_put_str("PLAYER ");
     uart_put_float(p->position.x);
@@ -80,6 +91,8 @@ void send_player_move(player_t* p) {
     uart_put_str("\n");
 }
 
+// Emits one ROT protocol line:
+//   ROT <yaw> <pitch>\n
 void send_player_rotation(player_t* p) {
     uart_put_str("ROT ");
     uart_put_int(p->rotation.yaw);
@@ -88,7 +101,8 @@ void send_player_rotation(player_t* p) {
     uart_put_str("\n");
 }
 
-// sends world to fruitjuice so theyre synced
+// Replays every edited block currently stored in world->edits as BLOCK lines.
+// Intended for host resync after reconnect/load, not for per-frame updates.
 void send_world(world_t *w) {
     trace("sending world now\n");
     for (uint32_t i = 0; i < w->edits.cap; i++) {
