@@ -97,7 +97,7 @@ void load_game(file_t *file_info, struct world *world, player_t *player) {
         pos_t pos = file_info->edit_blocks[i].pos;
         block_t block = file_info->edit_blocks[i].block;
         /* Skip invalid entries (corruption or padding) */
-        if (!world_pos_is_valid(pos) || block > BLOCK_WATER) {
+        if (!world_pos_is_valid(pos) || block > BLOCK_PUMPKIN) {
             trace("skipping invalid edit %d: pos=(%d,%d,%d) block=%d\n",
                   i, (int)pos.x, (int)pos.y, (int)pos.z, (int)block);
             continue;

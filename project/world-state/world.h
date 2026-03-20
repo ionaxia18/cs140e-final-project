@@ -16,7 +16,7 @@ enum {
     BLOCK_WOOD = 5,
     BLOCK_GLOWSTONE = 6,
     BLOCK_CAKE = 7,
-    BLOCK_WATER = 8
+    BLOCK_PUMPKIN = 8
 };
 
 // might want to move out of world.h
