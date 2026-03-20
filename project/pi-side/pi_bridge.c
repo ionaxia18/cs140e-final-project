@@ -4,7 +4,7 @@ static char heap[64 * 1500];
 static size_t heap_size = sizeof(heap);
 static void* heap_start = heap;
 #define BAUDRATE B115200
-// 2 for demo, 0 for flatworld
+// 0 for flatworld
 int seed = 0;
 // takes in a character move, will move the player on pi side and return new coordinates
 
@@ -45,18 +45,9 @@ void do_move(player_t* player, pos_t new_pos) {
                 (int)target.x, (int)target.y, (int)target.z);
         return;
     }
+    // send whatever update happened over uart to bridge
     send_set_block(target, block_selected);
 }
- 
-// void update_rotation(player_t* player, uint16_t yaw, uint16_t pitch) {
-//     player_rotation_increment(player, yaw, pitch);
-    // idk how to scale the rotation
-    // uart_put_str("ROT ");
-    // uart_put_int(player->rotation.yaw);
-    // uart_put_str(" ");
-    // uart_put_int(player->rotation.pitch);
-    // uart_put_str("\n");
-// }
 
 world_t* initialize_server() {
     /* static so it outlives this function - world->info points to it */
@@ -95,14 +86,13 @@ void notmain() {
 
     pi_dirent_t * directory = NULL;
     fat32_fs_t fs = initialize_fs(directory);
-    // gets world from file and sends to fruitjuice
-    // get_current_state(0, directory, &fs, w, &player);
+
+    // initialize hardware components and uart
     matrix_init();
     arcade_init();
     joystick_init();
     uart_init();
-    // outdated logic, needs to pull from gpio
-    // begin pulling from uart to update world
+
     pos_t new_pos = player.position;
     pos_t fall_pos = player.position;
     p_rot_t last_rot = player.rotation;
@@ -115,16 +105,19 @@ void notmain() {
     uart_flush_tx();
     world_print(w);
     trace("Welcome to Picraft! Ctrl+C to start playing.\n");
+
+    // begin pulling from gpio to update world
     while (1) {
-        // pos_t new_pos = arcade_read(&player.position);
         pos_t *displacement = &(pos_t){0, 0, 0};
         int destroy = read_move_joystick(displacement);
         int place = read_camera_joystick(&player.rotation);
+
+        // if player actually moved
         if (displacement->x || displacement->y || displacement->z) {
             new_pos = player_next_move(&player, *displacement);
             fall_pos = new_pos;
             fall_pos.y -= 1;
-            // check if player can fall down
+            // check if player can fall downwards
             if (valid_player_move(w, &player, fall_pos) && world_get_block(w, fall_pos) == BLOCK_AIR) {
                 new_pos.y -= 1;
             }
@@ -132,7 +125,7 @@ void notmain() {
                 player.position = new_pos;
                 send_player_move(&player);
             } else {
-                // check if player can jump onto whatever block is where they're trying to move
+                // if cant move into block, check if player can jump ontop of block
                 new_pos.y += 1;
                 if (valid_player_move(w, &player, new_pos)) {
                     player.position = new_pos;
@@ -145,14 +138,15 @@ void notmain() {
             send_player_rotation(&player);
             last_rot = player.rotation;
         }
+
         block_t new_block = read_block();
         if (new_block != 0) {
             block_selected = new_block;
         }
         if (destroy && !last_destroy) {
             change_block(w, &player, BLOCK_AIR);
-        } else if (block_selected && place && block_selected != 16 && !last_block && block_selected != 15) {
-            /* Only place on press (rising edge), not while held */
+        } else if (block_selected && place && block_selected != 16 && block_selected != 15 && !last_block) {
+            /* Only place on press (rising edge), not while held, and if block_selected is valid*/
             // updates w as well
             change_block(w, &player, block_selected);
             last_block = block_selected;
@@ -160,6 +154,7 @@ void notmain() {
             last_block = BLOCK_AIR;
         }
         last_destroy = destroy;
+        // button 16 saves world and quits program
         if (block_selected == 16 && !last_block) {
             save_current_state(w, &player, 0, directory, &fs);
             world_print(w);
@@ -167,6 +162,7 @@ void notmain() {
             uart_put_str("DONE\n");
             return;
         } else if (block_selected == 15 && !last_block) {
+            // button 15 reads saved world from file and sends to fruitjuice to reset world
             get_current_state(0, directory, &fs, w, &player);
             last_block = BLOCK_AIR;
             block_selected = BLOCK_AIR;
