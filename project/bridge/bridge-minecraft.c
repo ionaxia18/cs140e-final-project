@@ -81,6 +81,7 @@ int connect_to_fruitjuice_ngrok(const char *host, int port) {
     freeaddrinfo(res);
     return sock;
 }
+
 void put_block(int sock, int x, int y, int z, char* block) {
     char buf[128];
     sprintf(buf, "world.setBlock(%d,%d,%d,%s)\n", x, y, z, block);
@@ -118,15 +119,11 @@ int setup_pi_connection(const char * device) {
     return fd;
 }
 
-int fruit_juice_test(int sock) {
-    // move_player(sock, 235, 65, -1);
-    // put_block(sock, 235, 65, -1, "DIAMOND_BLOCK");
-    put_block(sock, 235, 65, -1, 0);
-    return 1;
-}
-
 int main() {
+    // use if fruitjuice running directly on this comptuer, specify PLUGIN_PORT
     // int sock = connect_to_fruitjuice(PLUGIN_IP, PLUGIN_PORT);
+
+    // use if connecting to fruitjuice on different computerthrough ngrok tcp tunnel, specify the host and port
     int sock = connect_to_fruitjuice_ngrok("4.tcp.us-cal-1.ngrok.io", 19838);
     if (sock < 0) {
         return 1;

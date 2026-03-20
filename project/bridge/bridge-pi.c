@@ -1,3 +1,4 @@
+// FILE NOT USED, DEPRECATED FOR LINKING COMPUTER KEYBOARD AND TRACKPAD TO PI
 #include "bridge-pi.h"
 #include <termios.h>
 #include <unistd.h>
