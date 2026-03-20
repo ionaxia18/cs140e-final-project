@@ -1,6 +1,6 @@
 CC = gcc
 
-CFLAGS = -Wall -I../src -I.
+CFLAGS = -Wall -I../world-state -I../../libpi/include -I../../libpi/libc -I.
 
 BRIDGE_MC_SRC = bridge-minecraft.c
 BRIDGE_PI_SRC = bridge-pi.c

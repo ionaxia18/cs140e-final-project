@@ -6,25 +6,13 @@
 #include <arpa/inet.h>
 #include <termios.h>
 #include <fcntl.h>
-#include "../constants.h"
 #include <netdb.h>
+#include "../constants.h"
+#include "../world-state/world.h"
+
 #define PLUGIN_IP "127.0.0.1"
 #define PLUGIN_PORT 4711
 #define BAUDRATE    B115200
-
-typedef uint8_t block_t;
-
-enum {
-    BLOCK_AIR   = 0,
-    BLOCK_STONE = 1,
-    BLOCK_GRASS  = 2,
-    BLOCK_DIRT = 3,
-    BLOCK_COBBLESTONE = 4,
-    BLOCK_WOOD = 5,
-    BLOCK_GLOWSTONE = 6,
-    BLOCK_CAKE = 7,
-    BLOCK_PUMPKIN = 8
-};
 
 char *block_name(block_t b) {
     switch (b) {
@@ -36,7 +24,7 @@ char *block_name(block_t b) {
         case BLOCK_WOOD: return "OAK_LOG";
         case BLOCK_GLOWSTONE: return "GLOWSTONE";
         case BLOCK_CAKE: return "CAKE";
-        case BLOCK_PUMPKIN: return "PUMPKIN";
+        case BLOCK_WATER: return "PUMPKIN";
         default: return "UNKNOWN";
     }
 }
